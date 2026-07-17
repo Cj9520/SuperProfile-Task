@@ -18,7 +18,7 @@ type Article = {
   status: string;
   excerpt?: string | null;
   updatedAt: string;
-  category?: { name: string; slug: string } | null;
+  category?: { id: string; name: string; slug: string } | null;
   author: { name: string };
 };
 
@@ -236,7 +236,10 @@ export default function KBPage() {
                 ].map((btn) => (
                   <button
                     key={btn.cmd}
-                    onClick={() => (editor?.chain().focus() as any)[btn.cmd]().run()}
+                    onClick={() => {
+                      const chain = editor?.chain().focus() as Record<string, () => { run: () => void }> | undefined;
+                      chain?.[btn.cmd]?.().run();
+                    }}
                     className={cn(
                       "px-2.5 py-1 rounded text-xs hover:bg-muted transition-colors",
                       btn.className

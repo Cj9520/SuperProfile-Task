@@ -29,18 +29,19 @@ export default async function HelpPage({
     );
   }
 
-  const where: Record<string, unknown> = {
+  const where = {
     workspaceId: workspace.id,
-    status: "published",
+    status: "published" as const,
+    ...(q.length >= 2
+      ? {
+          OR: [
+            { title: { contains: q } },
+            { excerpt: { contains: q } },
+            { searchText: { contains: q } },
+          ],
+        }
+      : {}),
   };
-
-  if (q.length >= 2) {
-    where.OR = [
-      { title: { contains: q } },
-      { excerpt: { contains: q } },
-      { searchText: { contains: q } },
-    ];
-  }
 
   const [articles, categories] = await Promise.all([
     prisma.knowledgeBaseArticle.findMany({
@@ -53,7 +54,7 @@ export default async function HelpPage({
       where: { workspaceId: workspace.id },
       include: {
         _count: {
-          select: { articles: { where: { status: "published" } } },
+          select: { articles: true },
         },
       },
       orderBy: { orderIndex: "asc" },
@@ -62,7 +63,9 @@ export default async function HelpPage({
 
   const articlesByCategory = categories.reduce(
     (acc, cat) => {
-      acc[cat.id] = articles.filter((a) => a.categoryId === cat.id);
+      acc[cat.id] = articles.filter(
+        (a) => a.categoryId === cat.id && a.status === "published"
+      );
       return acc;
     },
     {} as Record<string, typeof articles>
@@ -111,7 +114,7 @@ export default async function HelpPage({
               {articles.length === 0
                 ? "No results for"
                 : `${articles.length} results for`}{" "}
-              <span className="text-primary">"{q}"</span>
+              <span className="text-primary">&quot;{q}&quot;</span>
             </h2>
             <Link href="/help" className="text-sm text-muted-foreground hover:text-primary">
               ← Clear search
@@ -185,7 +188,11 @@ export default async function HelpPage({
   );
 }
 
-function ArticleCard({ article }: { article: { id: string; title: string; slug: string; excerpt?: string | null } }) {
+function ArticleCard({
+  article,
+}: {
+  article: { id: string; title: string; slug: string; excerpt?: string | null };
+}) {
   return (
     <Link
       href={`/help/${article.slug}`}
