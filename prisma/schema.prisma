@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  globalStatus String   @default("active") // active | invited | suspended
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastLoginAt  DateTime?
+
+  // Relations
+  workspaceMembers WorkspaceMember[]
+  workspacesCreated Workspace[]
+  sentMessages     Message[]         @relation("MessageSender")
+  kbArticlesAuthored KnowledgeBaseArticle[]
+  notifications    Notification[]
+  aiSummariesGenerated AiSummary[]
+}
+
+model Workspace {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  plan           String   @default("free") // free | assignment
+  supportEmail   String?
+  widgetToken    String   @unique @default(cuid())
+  kbSubpath      String?
+  createdByUserId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  createdBy      User              @relation(fields: [createdByUserId], references: [id])
+  members        WorkspaceMember[]
+  contacts       Contact[]
+  conversations  Conversation[]
+  messages       Message[]
+  chatSessions   ChatSession[]
+  kbCategories   KnowledgeBaseCategory[]
+  kbArticles     KnowledgeBaseArticle[]
+  aiSummaries    AiSummary[]
+  customDomains  CustomDomain[]
+  notifications  Notification[]
+}
+
+model WorkspaceMember {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  userId        String
+  role          String   @default("agent") // admin | agent
+  inviteStatus  String   @default("pending") // pending | accepted | revoked
+  inviteToken   String?  @unique
+  invitedByUserId String?
+  createdAt     DateTime @default(now())
+
+  // Relations
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedConversations Conversation[] @relation("ConversationAssignee")
+
+  @@unique([workspaceId, userId])
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  workspaceId String
+  email       String?
+  name        String?
+  externalId  String?
+  lastSeenAt  DateTime?
+  source      String   @default("chat") // chat | email | imported
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+}
+
+model Conversation {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  contactId        String
+  channel          String    @default("chat") // chat | email
+  subject          String?
+  status           String    @default("open") // open | snoozed | resolved
+  assigneeMemberId String?
+  priority         String    @default("normal") // low | normal | high
+  lastMessageAt    DateTime?
+  firstResponseAt  DateTime?
+  resolvedAt       DateTime?
+  snoozedUntil     DateTime?
+  sourceThreadKey  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contact       Contact          @relation(fields: [contactId], references: [id])
+  assignee      WorkspaceMember? @relation("ConversationAssignee", fields: [assigneeMemberId], references: [id])
+  messages      Message[]
+  chatSessions  ChatSession[]
+  aiSummary     AiSummary?
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  conversationId  String
+  workspaceId     String
+  senderType      String    // customer | agent | system | ai
+  senderUserId    String?
+  bodyText        String
+  bodyHtml        String?
+  channel         String    @default("chat") // chat | email | internal_note
+  direction       String    @default("inbound") // inbound | outbound
+  emailMessageId  String?
+  emailInReplyTo  String?
+  deliveryStatus  String    @default("sent") // sent | delivered | failed | received
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  senderUser    User?        @relation("MessageSender", fields: [senderUserId], references: [id])
+}
+
+model ChatSession {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  conversationId  String?
+  visitorToken    String    @unique
+  visitorName     String?
+  visitorEmail    String?
+  currentPageUrl  String?
+  userAgent       String?
+  isOnline        Boolean   @default(false)
+  lastSeenAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversation  Conversation? @relation(fields: [conversationId], references: [id])
+}
+
+model KnowledgeBaseCategory {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  slug        String
+  description String?
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workspace Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  articles  KnowledgeBaseArticle[]
+
+  @@unique([workspaceId, slug])
+}
+
+model KnowledgeBaseArticle {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  categoryId   String?
+  title        String
+  slug         String
+  excerpt      String?
+  bodyJson     String?   // Tiptap JSON
+  bodyHtml     String?   // Rendered HTML
+  status       String    @default("draft") // draft | published
+  searchText   String?   // Flattened for search
+  authorUserId String
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  workspace Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  category  KnowledgeBaseCategory? @relation(fields: [categoryId], references: [id])
+  author    User                   @relation(fields: [authorUserId], references: [id])
+
+  @@unique([workspaceId, slug])
+}
+
+model AiSummary {
+  id                 String    @id @default(cuid())
+  conversationId     String    @unique
+  workspaceId        String
+  summaryText        String
+  userNeed           String?
+  attemptedActions   String?
+  currentStatus      String?
+  sourceMessageCount Int       @default(0)
+  modelName          String?
+  lastGeneratedAt    DateTime  @default(now())
+  generatedByUserId  String?
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  generatedBy  User?        @relation(fields: [generatedByUserId], references: [id])
+}
+
+model CustomDomain {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  hostname           String    @unique
+  verificationToken  String    @default(cuid())
+  verificationStatus String    @default("pending") // pending | verified | failed
+  sslStatus          String    @default("pending") // pending | active | failed
+  provider           String    @default("manual") // cloudflare | vercel | manual
+  createdAt          DateTime  @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  type        String   // invite | assignment | reply | summary_failed | domain_verified | reopened
+  message     String
+  read        Boolean  @default(false)
+  link        String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

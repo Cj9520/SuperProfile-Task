@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 243 75% 59%;
+    --radius: 0.625rem;
+    --sidebar-background: 222 47% 10%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 243 75% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 14%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 222 47% 15%;
+    --sidebar-ring: 243 75% 59%;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 243 75% 65%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 243 75% 59%;
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 243 75% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 222 47% 13%;
+    --sidebar-ring: 243 75% 59%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ─── Scrollbar styling ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Tiptap editor ──────────────────────────────────────────────────────── */
+.ProseMirror {
+  outline: none;
+  min-height: 200px;
+  padding: 12px;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.ProseMirror h1 { @apply text-2xl font-bold mb-2; }
+.ProseMirror h2 { @apply text-xl font-semibold mb-2; }
+.ProseMirror h3 { @apply text-lg font-semibold mb-2; }
+.ProseMirror ul { @apply list-disc pl-6 mb-2; }
+.ProseMirror ol { @apply list-decimal pl-6 mb-2; }
+.ProseMirror blockquote { @apply border-l-4 border-border pl-4 italic text-muted-foreground; }
+.ProseMirror code { @apply bg-muted px-1 py-0.5 rounded text-sm font-mono; }
+.ProseMirror pre { @apply bg-muted p-4 rounded-lg mb-2 overflow-auto; }
+.ProseMirror a { @apply text-primary underline; }
+.ProseMirror strong { @apply font-semibold; }
+.ProseMirror em { @apply italic; }
+
+/* ─── Widget embed styles ───────────────────────────────────────────────── */
+#superprofile-widget-root {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ─── Landing page gradient text ────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Message bubble styles ─────────────────────────────────────────────── */
+.message-agent {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 18px 18px 4px 18px;
+}
+
+.message-customer {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border-radius: 18px 18px 18px 4px;
+}
+
+.message-internal {
+  background: hsl(43 96% 95%);
+  color: hsl(43 96% 20%);
+  border: 1px solid hsl(43 96% 85%);
+  border-radius: 8px;
+}
