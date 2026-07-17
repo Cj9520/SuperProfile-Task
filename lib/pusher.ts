@@ -90,13 +90,15 @@ export async function broadcastToWidget(
 let pusherClient: PusherClient | null = null;
 
 export function getPusherClient(): PusherClient {
-  if (!pusherClient && typeof window !== "undefined") {
-    pusherClient = new PusherClient(
-      process.env.NEXT_PUBLIC_PUSHER_APP_KEY || "demo",
-      {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "ap2",
-      }
-    );
+  if (typeof window === "undefined") throw new Error("getPusherClient called on server");
+  const key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
+  if (!key || key === "your-pusher-key" || key === "demo") {
+    throw new Error("Pusher not configured — set NEXT_PUBLIC_PUSHER_APP_KEY");
   }
-  return pusherClient!;
+  if (!pusherClient) {
+    pusherClient = new PusherClient(key, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "ap2",
+    });
+  }
+  return pusherClient;
 }

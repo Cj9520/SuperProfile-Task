@@ -1,0 +1,127 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Zap, Loader2, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from") || "/inbox";
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Welcome back, ${data.user?.name || ""}! 👋`);
+        router.push(from);
+      } else {
+        toast.error(data.error || "Invalid email or password");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-background rounded-2xl shadow-2xl p-8">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 mb-8">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+              <Zap className="w-4.5 h-4.5 text-white" />
+            </div>
+            <span className="font-bold text-xl">SuperProfile</span>
+          </div>
+
+          <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
+          <p className="text-muted-foreground text-sm mb-7">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-primary hover:underline font-medium">
+              Sign up free
+            </Link>
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block" htmlFor="login-email">
+                Email address
+              </label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="you@company.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium" htmlFor="login-password">
+                  Password
+                </label>
+              </div>
+              <div className="relative">
+                <Input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Your password"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  required
+                  className="pr-10"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              variant="gradient"
+              className="w-full"
+              size="lg"
+              disabled={loading}
+              id="login-submit"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Sign in
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

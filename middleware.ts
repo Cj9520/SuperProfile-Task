@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { getSessionFromRequest } from "@/lib/auth";
+// ⚠️ Import ONLY from auth-edge (no Prisma) — this file runs in Edge Runtime
+import { getSessionFromRequest } from "@/lib/auth-edge";
 import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public paths — always allowed
-  const publicPaths = [
+  const publicPrefixes = [
     "/",
     "/login",
     "/signup",
@@ -15,21 +16,23 @@ export async function middleware(req: NextRequest) {
     "/api/auth/logout",
     "/api/invites/accept",
     "/api/widget",
-    "/api/email/inbound",
-    "/api/email/events",
+    "/api/email",
     "/api/public",
     "/help",
     "/widget-demo",
+    "/widget",
+    "/_next",
+    "/favicon",
+    "/widget-loader",
   ];
 
   const isPublic =
-    publicPaths.some(
-      (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p + "?")
-    ) ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/widget-loader") ||
-    pathname.includes(".");
+    publicPrefixes.some(
+      (p) =>
+        pathname === p ||
+        pathname.startsWith(p + "/") ||
+        pathname.startsWith(p + "?")
+    ) || pathname.includes(".");
 
   if (isPublic) return NextResponse.next();
 

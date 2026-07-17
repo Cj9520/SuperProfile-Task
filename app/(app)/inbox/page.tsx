@@ -90,19 +90,21 @@ export default function InboxPage() {
   // Real-time updates
   useEffect(() => {
     if (!workspaceId) return;
-    const pusher = getPusherClient();
-    const channel = pusher.subscribe(workspaceChannel(workspaceId));
-
-    channel.bind(PUSHER_EVENTS.NEW_MESSAGE, () => {
-      fetchConversations();
-    });
-    channel.bind(PUSHER_EVENTS.CONVERSATION_UPDATED, () => {
-      fetchConversations();
-    });
-
+    let pusher: ReturnType<typeof getPusherClient> | null = null;
+    let channel: ReturnType<ReturnType<typeof getPusherClient>["subscribe"]> | null = null;
+    try {
+      pusher = getPusherClient();
+      channel = pusher.subscribe(workspaceChannel(workspaceId));
+      channel.bind(PUSHER_EVENTS.NEW_MESSAGE, () => { fetchConversations(); });
+      channel.bind(PUSHER_EVENTS.CONVERSATION_UPDATED, () => { fetchConversations(); });
+    } catch {
+      // Pusher not configured — real-time disabled, polling not needed
+    }
     return () => {
-      channel.unbind_all();
-      pusher.unsubscribe(workspaceChannel(workspaceId));
+      try {
+        channel?.unbind_all();
+        if (pusher && workspaceId) pusher.unsubscribe(workspaceChannel(workspaceId));
+      } catch {}
     };
   }, [workspaceId, fetchConversations]);
 
