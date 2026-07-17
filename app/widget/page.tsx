@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Send,
@@ -30,7 +30,7 @@ type KBArticle = {
   excerpt?: string | null;
 };
 
-export default function WidgetPage() {
+function WidgetPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
@@ -580,5 +580,17 @@ export default function WidgetPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function WidgetPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-full flex items-center justify-center bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+      </div>
+    }>
+      <WidgetPageContent />
+    </Suspense>
   );
 }
