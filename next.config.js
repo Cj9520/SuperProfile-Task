@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Suppress TS type errors during build — route handlers being migrated to Next.js 15 async params
-  typescript: { ignoreBuildErrors: true },
-
   // Opt these packages out of bundling (moved from experimental in Next.js 15+)
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
 

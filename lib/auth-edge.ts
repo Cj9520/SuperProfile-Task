@@ -1,6 +1,6 @@
 /**
  * Edge-safe session verification — NO Prisma, NO Node.js APIs.
- * Used exclusively by middleware.ts (Edge Runtime).
+ * Used exclusively by proxy.ts (Edge Runtime).
  */
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";

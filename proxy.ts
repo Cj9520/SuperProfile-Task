@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth-edge";
 import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public paths — always allowed

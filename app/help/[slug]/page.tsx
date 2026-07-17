@@ -4,15 +4,20 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Clock, User, BookOpen, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
-type Props = { params: { slug: string }; searchParams: { workspaceId?: string } };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ workspaceId?: string }>;
+};
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const workspace = searchParams.workspaceId
-    ? await prisma.workspace.findUnique({ where: { id: searchParams.workspaceId } })
+  const { slug } = await params;
+  const { workspaceId } = await searchParams;
+  const workspace = workspaceId
+    ? await prisma.workspace.findUnique({ where: { id: workspaceId } })
     : await prisma.workspace.findFirst({ orderBy: { createdAt: "asc" } });
 
   const article = await prisma.knowledgeBaseArticle.findFirst({
-    where: { slug: params.slug, workspaceId: workspace?.id, status: "published" },
+    where: { slug, workspaceId: workspace?.id, status: "published" },
     select: { title: true, excerpt: true },
   });
 
@@ -25,14 +30,16 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function ArticlePage({ params, searchParams }: Props) {
-  const workspace = searchParams.workspaceId
-    ? await prisma.workspace.findUnique({ where: { id: searchParams.workspaceId } })
+  const { slug } = await params;
+  const { workspaceId } = await searchParams;
+  const workspace = workspaceId
+    ? await prisma.workspace.findUnique({ where: { id: workspaceId } })
     : await prisma.workspace.findFirst({ orderBy: { createdAt: "asc" } });
 
   if (!workspace) notFound();
 
   const article = await prisma.knowledgeBaseArticle.findFirst({
-    where: { slug: params.slug, workspaceId: workspace.id, status: "published" },
+    where: { slug, workspaceId: workspace.id, status: "published" },
     include: {
       category: { select: { name: true, slug: true } },
       author: { select: { name: true } },
@@ -41,7 +48,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
 
   if (!article) notFound();
 
-  const helpBase = `/help${searchParams.workspaceId ? `?workspaceId=${searchParams.workspaceId}` : ""}`;
+  const helpBase = `/help${workspaceId ? `?workspaceId=${workspaceId}` : ""}`;
 
   // Fetch related articles from same category
   const related = article.categoryId
@@ -186,7 +193,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
                     {related.map((rel) => (
                       <Link
                         key={rel.id}
-                        href={`/help/${rel.slug}${searchParams.workspaceId ? `?workspaceId=${searchParams.workspaceId}` : ""}`}
+                        href={`/help/${rel.slug}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}
                         className="block p-3 rounded-xl border hover:border-primary/30 hover:bg-primary/5 transition-all group"
                       >
                         <p className="text-sm font-medium group-hover:text-primary transition-colors line-clamp-2 leading-snug">

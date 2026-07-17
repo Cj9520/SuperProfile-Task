@@ -4,10 +4,9 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/http";
 import { updateMemberSchema } from "@/features/team/validation";
 import { updateMember, removeMember } from "@/features/team/service";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+type RouteParams = { params: Promise<{ id: string }> };
+
+export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
   if (session.role !== "admin") return apiError("Insufficient permissions", 403);
@@ -16,24 +15,21 @@ export async function PATCH(
     const data = updateMemberSchema.safeParse(await req.json());
     if (!data.success) return apiError(data.error.errors[0].message, 422);
 
-    return apiSuccess(
-      await updateMember(session.workspaceId, params.id, data.data)
-    );
+    const { id } = await params;
+    return apiSuccess(await updateMember(session.workspaceId, id, data.data));
   } catch (err) {
     return handleApiError(err, "team:patch");
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
   if (session.role !== "admin") return apiError("Insufficient permissions", 403);
 
   try {
-    return apiSuccess(await removeMember(session.workspaceId, params.id));
+    const { id } = await params;
+    return apiSuccess(await removeMember(session.workspaceId, id));
   } catch (err) {
     return handleApiError(err, "team:delete");
   }

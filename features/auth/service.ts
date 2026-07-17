@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 import { createSession, verifyInviteToken } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { sendVerificationEmail } from "@/lib/email";
 import type {
   SignupInput,
   LoginInput,
@@ -19,7 +21,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
   return slug;
 }
 
-/** Create a new user + workspace, make the user its admin, and open a session. */
+/** Create a new user + workspace, make the user its admin, and send a verification email. */
 export async function signup(input: SignupInput) {
   const { name, email, password, workspaceName } = input;
 
@@ -31,10 +33,18 @@ export async function signup(input: SignupInput) {
   const passwordHash = await bcrypt.hash(password, 12);
   const slug = await generateUniqueSlug(workspaceName);
   const widgetToken = `wt_${Math.random().toString(36).slice(2, 18)}`;
+  const emailVerificationToken = randomUUID();
 
-  const result = await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email, passwordHash, name, globalStatus: "active" },
+      data: {
+        email,
+        passwordHash,
+        name,
+        globalStatus: "active",
+        emailVerified: false,
+        emailVerificationToken,
+      },
     });
 
     const workspace = await tx.workspace.create({
@@ -47,7 +57,7 @@ export async function signup(input: SignupInput) {
       },
     });
 
-    const member = await tx.workspaceMember.create({
+    await tx.workspaceMember.create({
       data: {
         workspaceId: workspace.id,
         userId: user.id,
@@ -66,29 +76,15 @@ export async function signup(input: SignupInput) {
         orderIndex: 0,
       },
     });
-
-    return { user, workspace, member };
   });
 
-  await createSession({
-    userId: result.user.id,
-    workspaceId: result.workspace.id,
-    role: "admin",
-    memberId: result.member.id,
-  });
+  // Send verification email (non-blocking — don't fail signup if email send fails)
+  await sendVerificationEmail(email, emailVerificationToken).catch((err) =>
+    console.error("[signup] Failed to send verification email:", err)
+  );
 
   return {
-    user: {
-      id: result.user.id,
-      name: result.user.name,
-      email: result.user.email,
-    },
-    workspace: {
-      id: result.workspace.id,
-      name: result.workspace.name,
-      slug: result.workspace.slug,
-      widgetToken: result.workspace.widgetToken,
-    },
+    message: "Account created! Please check your email to verify your account before logging in.",
   };
 }
 
@@ -110,6 +106,10 @@ export async function login(input: LoginInput) {
 
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     throw new ApiError(401, "Invalid email or password");
+  }
+
+  if (!user.emailVerified) {
+    throw new ApiError(403, "Please verify your email before logging in. Check your inbox for the verification link.");
   }
 
   if (user.globalStatus === "suspended") {

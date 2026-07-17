@@ -11,26 +11,23 @@ import {
   postMessage,
 } from "@/features/conversations/service";
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 // GET /api/conversations/:id
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, { params }: RouteParams) {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
 
   try {
-    return apiSuccess(await getConversation(session.workspaceId, params.id));
+    const { id } = await params;
+    return apiSuccess(await getConversation(session.workspaceId, id));
   } catch (err) {
     return handleApiError(err, "conversation:get");
   }
 }
 
 // PATCH /api/conversations/:id
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
 
@@ -38,17 +35,15 @@ export async function PATCH(
     const data = updateConversationSchema.safeParse(await req.json());
     if (!data.success) return apiError(data.error.errors[0].message, 422);
 
-    return apiSuccess(await updateConversation(session, params.id, data.data));
+    const { id } = await params;
+    return apiSuccess(await updateConversation(session, id, data.data));
   } catch (err) {
     return handleApiError(err, "conversation:patch");
   }
 }
 
 // POST /api/conversations/:id/messages — agent reply or internal note
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: RouteParams) {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
 
@@ -56,7 +51,8 @@ export async function POST(
     const data = messageSchema.safeParse(await req.json());
     if (!data.success) return apiError(data.error.errors[0].message, 422);
 
-    return apiSuccess(await postMessage(session, params.id, data.data), 201);
+    const { id } = await params;
+    return apiSuccess(await postMessage(session, id, data.data), 201);
   } catch (err) {
     return handleApiError(err, "conversation:message");
   }

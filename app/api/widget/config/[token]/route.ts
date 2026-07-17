@@ -5,10 +5,11 @@ import { getWidgetConfig } from "@/features/widget/service";
 // GET /api/widget/config/:token
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    return apiSuccess(await getWidgetConfig(params.token));
+    const { token } = await params;
+    return apiSuccess(await getWidgetConfig(token));
   } catch (err) {
     return handleApiError(err, "widget:config");
   }
