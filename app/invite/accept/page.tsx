@@ -70,8 +70,7 @@ function AcceptInviteContent() {
 
           <h1 className="text-2xl font-bold mb-1">Accept your invitation</h1>
           <p className="text-muted-foreground text-sm mb-7">
-            You've been invited to join a workspace. Set up your account to get
-            started.
+            You&apos;ve been invited to join a workspace. Set up your account to get started.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,11 +108,7 @@ function AcceptInviteContent() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -127,7 +122,7 @@ function AcceptInviteContent() {
               id="accept-invite-submit"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Accept & join workspace
+              Accept &amp; join workspace
             </Button>
           </form>
         </div>
@@ -138,11 +133,13 @@ function AcceptInviteContent() {
 
 export default function AcceptInvitePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center gradient-bg">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center gradient-bg">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+        </div>
+      }
+    >
       <AcceptInviteContent />
     </Suspense>
   );
