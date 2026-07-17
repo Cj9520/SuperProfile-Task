@@ -46,7 +46,8 @@ export default function WidgetPage() {
   const [articles, setArticles] = useState<KBArticle[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAgentTyping, setIsAgentTyping] = useState(false);
-  const [isAgentOnline] = useState(true);
+  const [isAgentOnline, setIsAgentOnline] = useState(false);
+  const [responseTime, setResponseTime] = useState("We'll reply as soon as possible");
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pusherRef = useRef<PusherClient | null>(null);
@@ -59,6 +60,15 @@ export default function WidgetPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.workspace) setWorkspaceName(d.workspace.name);
+      })
+      .catch(() => {});
+
+    // Fetch real agent status
+    fetch(`/api/widget/status?token=${token}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setIsAgentOnline(d.isOnline ?? false);
+        if (d.responseTime) setResponseTime(d.responseTime);
       })
       .catch(() => {});
 
@@ -257,8 +267,8 @@ export default function WidgetPage() {
       }).catch(() => {});
     }, 2000);
 
-    // Live KB suggestion for longer queries
-    if (value.length > 20) searchArticles(value);
+    // Live KB suggestion for longer queries (PRD §6.6.3, §12.3)
+    if (value.length >= 20) searchArticles(value);
     else if (value.length < 5) setArticles([]);
   };
 
@@ -337,7 +347,8 @@ export default function WidgetPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">Send us a message</p>
-                <p className="text-xs text-gray-400">Typically replies in a few minutes</p>
+                <p className="text-xs text-gray-400">Send us a message</p>
+                <p className="text-xs text-gray-400">{responseTime}</p>
               </div>
             </button>
             <button

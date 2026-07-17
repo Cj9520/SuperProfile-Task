@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   ]);
   if (!user || !workspace) redirect("/login");
 
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3001";
   const embedCode = `<script src="${appUrl}/widget-loader.js" data-widget-token="${workspace.widgetToken}"></script>`;
 
   return (

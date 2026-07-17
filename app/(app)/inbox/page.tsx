@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { ConversationListItem } from "@/components/inbox/conversation-list-item";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ConversationSidebar } from "@/components/inbox/conversation-sidebar";
+import { OnboardingChecklist } from "@/components/inbox/onboarding-checklist";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { getPusherClient, workspaceChannel, PUSHER_EVENTS } from "@/lib/pusher";
 
@@ -61,6 +62,9 @@ export default function InboxPage() {
   const [statusFilter, setStatusFilter] = useState("open");
   const [channelFilter, setChannelFilter] = useState("");
   const [workspaceId, setWorkspaceId] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(
+    searchParams.get("onboarding") === "1"
+  );
 
   const fetchConversations = useCallback(async () => {
     const params = new URLSearchParams();
@@ -223,15 +227,26 @@ export default function InboxPage() {
             onUpdate={fetchConversations}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center px-8">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-4">
-              <MessageSquare className="w-10 h-10 text-indigo-500" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Select a conversation</h2>
-            <p className="text-muted-foreground text-sm max-w-xs">
-              Choose a conversation from the list to view the full thread and
-              reply to your customers.
-            </p>
+          <div className="flex flex-col items-center justify-center h-full text-center px-8 gap-6">
+            {showOnboarding && (
+              <div className="w-full max-w-md">
+                <OnboardingChecklist onDismiss={() => setShowOnboarding(false)} />
+              </div>
+            )}
+            {!showOnboarding && (
+              <>
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                  <MessageSquare className="w-10 h-10 text-indigo-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Select a conversation</h2>
+                  <p className="text-muted-foreground text-sm max-w-xs">
+                    Choose a conversation from the list to view the full thread and
+                    reply to your customers.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

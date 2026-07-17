@@ -31,7 +31,7 @@ export default function SignupPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success("Workspace created! Welcome aboard 🎉");
-        router.push("/inbox");
+        router.push("/inbox?onboarding=1");
       } else {
         toast.error(data.error || "Signup failed");
       }

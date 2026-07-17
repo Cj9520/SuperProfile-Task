@@ -13,7 +13,7 @@ export default async function WidgetDemoPage() {
   });
 
   const token = workspace?.widgetToken || "demo";
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3001";
 
   return (
     <html lang="en">
