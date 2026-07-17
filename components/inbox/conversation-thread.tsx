@@ -101,6 +101,8 @@ export function ConversationThread({
     setReply("");
     setNoteMode(false);
     fetchConversation();
+    // Mark conversation as read (fire-and-forget → triggers Pusher read receipt to widget)
+    fetch(`/api/conversations/${conversationId}/read`, { method: "POST" }).catch(() => {});
   }, [conversationId, fetchConversation]);
 
   useEffect(() => {

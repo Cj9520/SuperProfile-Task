@@ -19,6 +19,7 @@ type Message = {
   senderType: string;
   bodyText: string;
   createdAt: string;
+  readAt?: string | null;
   senderUser?: { name: string; avatarUrl?: string | null } | null;
 };
 
@@ -48,6 +49,7 @@ export default function WidgetPage() {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [isAgentOnline, setIsAgentOnline] = useState(false);
   const [responseTime, setResponseTime] = useState("We'll reply as soon as possible");
+  const [readMessageIds, setReadMessageIds] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pusherRef = useRef<PusherClient | null>(null);
@@ -128,6 +130,15 @@ export default function WidgetPage() {
       if (data.source === "agent") setIsAgentTyping(false);
     });
 
+    // Read receipts — agent opened conversation
+    channel.bind("message-read", (data: { messageIds: string[]; readAt: string }) => {
+      setReadMessageIds((prev) => {
+        const next = new Set(prev);
+        data.messageIds.forEach((id) => next.add(id));
+        return next;
+      });
+    });
+
     return () => {
       channel.unbind_all();
       pusher.unsubscribe(`widget-${visitorToken}`);
@@ -164,6 +175,11 @@ export default function WidgetPage() {
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
+        // Initialize read state from already-read messages
+        const alreadyRead = new Set<string>(
+          (data.messages || []).filter((m: Message) => m.readAt).map((m: Message) => m.id)
+        );
+        setReadMessageIds(alreadyRead);
       }
     } catch {}
   }
@@ -396,6 +412,16 @@ export default function WidgetPage() {
                   {msg.bodyText}
                   {msg.senderUser && msg.senderType !== "customer" && (
                     <p className="text-[10px] mt-0.5 opacity-60">{msg.senderUser.name}</p>
+                  )}
+                  {/* Read receipt tick — only on customer messages */}
+                  {msg.senderType === "customer" && (
+                    <p className={`text-[9px] mt-0.5 text-right transition-colors ${
+                      readMessageIds.has(msg.id)
+                        ? "text-indigo-200"
+                        : "text-indigo-400/50"
+                    }`}>
+                      {readMessageIds.has(msg.id) ? "✓✓ Seen" : "✓ Sent"}
+                    </p>
                   )}
                 </div>
               </div>
