@@ -13,6 +13,8 @@ datasource db {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
+  emailVerified Boolean @default(false)
+  emailVerificationToken String? @unique
   passwordHash String
   name         String
   avatarUrl    String?
