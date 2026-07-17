@@ -3,6 +3,8 @@ import Link from "next/link";
 import { BookOpen, Search, ChevronRight, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Help Center — SuperProfile",
   description: "Find answers in our knowledge base",
@@ -11,10 +13,9 @@ export const metadata: Metadata = {
 export default async function HelpPage({
   searchParams,
 }: {
-  searchParams: { q?: string; workspaceId?: string };
+  searchParams: Promise<{ q?: string; workspaceId?: string }>;
 }) {
-  const q = searchParams.q || "";
-  const workspaceId = searchParams.workspaceId;
+  const { q = "", workspaceId } = await searchParams;
 
   // Find workspace (by custom domain or first workspace if demo)
   const workspace = workspaceId
