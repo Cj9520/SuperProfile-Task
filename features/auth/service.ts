@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 import { createSession, verifyInviteToken } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/features/email/service";
 import type {
   SignupInput,
   LoginInput,

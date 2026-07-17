@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Zap, Loader2, Eye, EyeOff } from "lucide-react";
+import { Zap, Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -30,8 +29,7 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success("Workspace created! Welcome aboard 🎉");
-        router.push("/inbox?onboarding=1");
+        setSubmitted(true);
       } else {
         toast.error(data.error || "Signup failed");
       }
@@ -40,6 +38,30 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-background rounded-2xl shadow-2xl p-8 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center mx-auto mb-5">
+              <MailCheck className="w-6 h-6 text-emerald-500" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Check your email</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              We sent a verification link to <strong>{form.email}</strong>.
+              Click it to activate your account, then sign in.
+            </p>
+            <Link href="/login">
+              <Button variant="gradient" className="w-full" size="lg">
+                Go to sign in
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

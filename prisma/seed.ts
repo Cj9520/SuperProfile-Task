@@ -24,14 +24,24 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@acme.com" },
-    update: {},
-    create: { email: "admin@acme.com", name: "Alex Admin", passwordHash },
+    update: { emailVerified: true },
+    create: {
+      email: "admin@acme.com",
+      name: "Alex Admin",
+      passwordHash,
+      emailVerified: true,
+    },
   });
 
   const agentUser = await prisma.user.upsert({
     where: { email: "agent@acme.com" },
-    update: {},
-    create: { email: "agent@acme.com", name: "Sam Agent", passwordHash },
+    update: { emailVerified: true },
+    create: {
+      email: "agent@acme.com",
+      name: "Sam Agent",
+      passwordHash,
+      emailVerified: true,
+    },
   });
 
   console.log("✅ Users: admin@acme.com / agent@acme.com (password: password123)");
