@@ -161,7 +161,7 @@ async function main() {
         data: {
           workspaceId: workspace.id,
           conversationId: conv.id,
-          visitorToken: `vt_seed_${conv.id.slice(0, 8)}`,
+          visitorToken: `vt_seed_${conv.id}`,
           visitorName: def.contact.name,
           visitorEmail: def.contact.email,
           isOnline: false,

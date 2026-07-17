@@ -15,6 +15,7 @@ export async function middleware(req: NextRequest) {
     "/api/auth/login",
     "/api/auth/logout",
     "/api/invites/accept",
+    "/invite",
     "/api/widget",
     "/api/email",
     "/api/public",

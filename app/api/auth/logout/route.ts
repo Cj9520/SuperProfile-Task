@@ -1,5 +1,5 @@
 import { deleteSession } from "@/lib/auth";
-import { apiSuccess } from "@/lib/utils";
+import { apiSuccess } from "@/lib/http";
 
 export async function POST() {
   await deleteSession();

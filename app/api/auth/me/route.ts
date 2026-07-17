@@ -1,5 +1,5 @@
 import { getSession, getCurrentUser, getCurrentWorkspace } from "@/lib/auth";
-import { apiError, apiSuccess } from "@/lib/utils";
+import { apiError, apiSuccess } from "@/lib/http";
 import { prisma } from "@/lib/db";
 
 export async function GET() {

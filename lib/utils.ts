@@ -44,37 +44,7 @@ export function truncate(str: string, length: number): string {
   return str.length > length ? str.slice(0, length) + "…" : str;
 }
 
-export function apiError(message: string, status: number) {
-  return Response.json({ error: message }, { status });
-}
-
-export function apiSuccess(data: unknown, status = 200) {
-  return Response.json(data, { status });
-}
-
-// Strip HTML tags to get plain text
+// Strip HTML tags to get plain text (used for search indexing).
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
-// Simple rate limiting store (in-memory, resets on restart)
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
-
-export function checkRateLimit(
-  key: string,
-  limit: number,
-  windowMs: number
-): boolean {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-
-  if (entry.count >= limit) return false;
-
-  entry.count++;
-  return true;
 }

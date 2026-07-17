@@ -47,11 +47,20 @@ Fill in your values:
 
 | Variable | Source |
 |---|---|
-| `DATABASE_URL` | Neon.tech (free Postgres) or keep as `file:./dev.db` for SQLite |
-| `NEXTAUTH_SECRET` | Any 32+ char random string |
-| `PUSHER_APP_ID` + keys | [pusher.com](https://pusher.com) free tier |
+| `DATABASE_URL` | PostgreSQL — [Neon](https://neon.tech) (free) for prod, or a local/Docker Postgres for dev. The Prisma provider is `postgresql`; SQLite is not supported. |
+| `NEXTAUTH_SECRET` | Any 32+ char random string (`openssl rand -base64 32`) |
+| `PUSHER_APP_ID` + keys | [pusher.com](https://pusher.com) free tier (set both server `PUSHER_*` and public `NEXT_PUBLIC_PUSHER_*`) |
 | `RESEND_API_KEY` | [resend.com](https://resend.com) free tier |
 | `GEMINI_API_KEY` | [aistudio.google.com](https://aistudio.google.com) free |
+
+See [`.env.example`](.env.example) for the full list with placeholders.
+
+**Local Postgres via Docker (quick):**
+```bash
+docker run -d --name sp-postgres -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=superprofile -p 55432:5432 postgres:16-alpine
+# DATABASE_URL="postgresql://postgres:postgres@localhost:55432/superprofile?schema=public"
+```
 
 ### 3. Set up database
 
@@ -186,13 +195,18 @@ Replies are sent automatically when agents reply to email conversations. Threadi
 # Push to GitHub, then:
 vercel --prod
 
-# Set environment variables in Vercel dashboard
-# Run DB migration:
+# Set the env vars from .env.example in the Vercel dashboard
+# (Production + Preview). Set APP_URL / NEXT_PUBLIC_APP_URL / WIDGET_URL
+# to your Vercel URL. DATABASE_URL = your Neon pooled connection string.
+
+# Push the schema to the production DB once:
 vercel env pull
 npx prisma db push
 ```
 
-For production: switch `DATABASE_URL` to a Neon/Supabase PostgreSQL URL and update the Prisma provider from `sqlite` to `postgresql` in `schema.prisma`.
+The build command (`prisma generate && next build`) runs the Prisma client
+generation automatically on every deploy. The Prisma provider is already
+`postgresql` — point `DATABASE_URL` at Neon and you're set.
 
 ---
 
