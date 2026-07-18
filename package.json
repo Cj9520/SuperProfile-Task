@@ -14,7 +14,6 @@
     "db:reset": "prisma db push --force-reset && ts-node --project tsconfig.seed.json prisma/seed.ts"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "@prisma/client": "5.22.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",

@@ -134,7 +134,7 @@ export default function LandingPage() {
             {[
               { label: "Deployment time", value: "< 5 mins" },
               { label: "Script tag install", value: "1 line" },
-              { label: "AI powered", value: "Gemini" },
+              { label: "AI powered", value: "DeepSeek" },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl font-bold text-white mb-0.5">{s.value}</p>

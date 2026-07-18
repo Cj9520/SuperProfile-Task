@@ -1,8 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+// "deepseek-chat" currently aliases to deepseek-v4-flash; pin pro explicitly
+const DEEPSEEK_MODEL = "deepseek-v4-pro";
 
 export interface AISummaryResult {
   summaryText: string;
@@ -15,8 +16,6 @@ export interface AISummaryResult {
 export async function generateConversationSummary(
   messages: Array<{ senderType: string; bodyText: string; createdAt: Date }>
 ): Promise<AISummaryResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
   const messageHistory = messages
     .map(
       (m) =>
@@ -37,8 +36,25 @@ Respond with ONLY a JSON object in this exact format (no markdown, no code block
   "currentStatus": "Current state of the issue resolution"
 }`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
+  const response = await fetch(DEEPSEEK_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY || ""}`,
+    },
+    body: JSON.stringify({
+      model: DEEPSEEK_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek API error: ${response.status} ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  const text = (data.choices?.[0]?.message?.content || "").trim();
 
   // Parse the JSON response
   const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -51,7 +67,7 @@ Respond with ONLY a JSON object in this exact format (no markdown, no code block
     userNeed: parsed.userNeed || "Not specified",
     attemptedActions: parsed.attemptedActions || "None documented",
     currentStatus: parsed.currentStatus || "Under review",
-    modelName: "gemini-1.5-flash",
+    modelName: DEEPSEEK_MODEL,
   };
 }
 
