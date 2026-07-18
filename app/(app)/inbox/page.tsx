@@ -20,6 +20,7 @@ import { ConversationListItem } from "@/components/inbox/conversation-list-item"
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ConversationSidebar } from "@/components/inbox/conversation-sidebar";
 import { OnboardingChecklist } from "@/components/inbox/onboarding-checklist";
+import { NewConversationModal } from "@/components/inbox/new-conversation-modal";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { getPusherClient, workspaceChannel, PUSHER_EVENTS } from "@/lib/pusher";
 
@@ -67,6 +68,17 @@ export default function InboxPage() {
   const [showOnboarding, setShowOnboarding] = useState(
     searchParams.get("onboarding") === "1"
   );
+  const [showNewConv, setShowNewConv] = useState(false);
+  const [newConvPrefillContact, setNewConvPrefillContact] = useState<string | undefined>();
+
+  // Auto-open new conversation modal if navigated from contacts page
+  useEffect(() => {
+    if (searchParams.get("newConv") === "1") {
+      const contactId = searchParams.get("contactId") || undefined;
+      setNewConvPrefillContact(contactId);
+      setShowNewConv(true);
+    }
+  }, [searchParams]);
 
   const fetchConversations = useCallback(async () => {
     const params = new URLSearchParams();
@@ -126,14 +138,25 @@ export default function InboxPage() {
             <Inbox className="w-5 h-5 text-primary" />
             <h1 className="font-semibold text-sm">Inbox</h1>
           </div>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={fetchConversations}
-            className="h-7 w-7"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={fetchConversations}
+              className="h-7 w-7"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => { setNewConvPrefillContact(undefined); setShowNewConv(true); }}
+              className="h-7 w-7"
+              title="New conversation"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
@@ -260,6 +283,14 @@ export default function InboxPage() {
           onUpdate={fetchConversations}
         />
       )}
+
+      {/* New Conversation Modal */}
+      <NewConversationModal
+        open={showNewConv}
+        onClose={() => setShowNewConv(false)}
+        onCreated={fetchConversations}
+        prefillContactId={newConvPrefillContact}
+      />
     </div>
   );
 }

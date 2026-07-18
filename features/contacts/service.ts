@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { ApiError } from "@/lib/http";
 
 export async function listContacts(
   workspaceId: string,
@@ -29,3 +30,49 @@ export async function listContacts(
 
   return { contacts, total, page, limit };
 }
+
+export async function createContact(
+  workspaceId: string,
+  data: { name?: string; email?: string }
+) {
+  const contact = await prisma.contact.create({
+    data: {
+      workspaceId,
+      name: data.name || null,
+      email: data.email || null,
+      source: "imported",
+      lastSeenAt: new Date(),
+    },
+  });
+  return { contact };
+}
+
+export async function getContactDetail(workspaceId: string, contactId: string) {
+  const contact = await prisma.contact.findFirst({
+    where: { id: contactId, workspaceId },
+    include: {
+      _count: { select: { conversations: true } },
+      conversations: {
+        orderBy: { lastMessageAt: "desc" },
+        take: 20,
+        select: {
+          id: true,
+          channel: true,
+          status: true,
+          subject: true,
+          lastMessageAt: true,
+          createdAt: true,
+          _count: { select: { messages: true } },
+          assignee: {
+            select: {
+              user: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!contact) throw new ApiError(404, "Contact not found");
+  return { contact };
+}
+

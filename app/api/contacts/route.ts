@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
-import { listContacts } from "@/features/contacts/service";
+import { listContacts, createContact } from "@/features/contacts/service";
 
 const contactFiltersSchema = z.object({
   search: z.string().max(200).default(""),
@@ -29,5 +29,28 @@ export async function GET(req: NextRequest) {
     return apiSuccess(await listContacts(session.workspaceId, filters.data));
   } catch (err) {
     return handleApiError(err, "contacts:list");
+  }
+}
+
+const createContactSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  email: z.string().email().optional(),
+}).refine((d) => d.name || d.email, {
+  message: "At least a name or email is required",
+});
+
+// POST /api/contacts
+export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return apiError("Authentication required", 401);
+
+  try {
+    const body = await req.json();
+    const parsed = createContactSchema.safeParse(body);
+    if (!parsed.success) return apiValidationError(parsed.error);
+
+    return apiSuccess(await createContact(session.workspaceId, parsed.data), 201);
+  } catch (err) {
+    return handleApiError(err, "contacts:create");
   }
 }

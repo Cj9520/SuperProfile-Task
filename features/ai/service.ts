@@ -15,7 +15,7 @@ export interface AISummaryResult {
 export async function generateConversationSummary(
   messages: Array<{ senderType: string; bodyText: string; createdAt: Date }>
 ): Promise<AISummaryResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const messageHistory = messages
     .map(
@@ -51,7 +51,7 @@ Respond with ONLY a JSON object in this exact format (no markdown, no code block
     userNeed: parsed.userNeed || "Not specified",
     attemptedActions: parsed.attemptedActions || "None documented",
     currentStatus: parsed.currentStatus || "Under review",
-    modelName: "gemini-2.0-flash",
+    modelName: "gemini-1.5-flash",
   };
 }
 
@@ -148,6 +148,5 @@ export async function getSummary(workspaceId: string, id: string) {
   const summary = await prisma.aiSummary.findFirst({
     where: { conversationId: id, workspaceId },
   });
-  if (!summary) throw new ApiError(404, "No summary available");
-  return { summary };
+  return { summary: summary ?? null };
 }

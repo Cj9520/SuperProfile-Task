@@ -284,3 +284,82 @@ export async function markConversationRead(workspaceId: string, id: string) {
 
   return { ok: true, readCount: unreadMessages.length };
 }
+
+/** Create a new outbound conversation from the dashboard. */
+export async function createConversation(
+  session: SessionPayload,
+  input: {
+    contactId?: string;
+    contactEmail?: string;
+    contactName?: string;
+    channel: "chat" | "email";
+    subject?: string;
+    firstMessage: string;
+  }
+) {
+  let contactId = input.contactId;
+
+  // If no contactId, find or create by email
+  if (!contactId) {
+    if (!input.contactEmail && !input.contactName) {
+      throw new ApiError(422, "Provide a contactId or contactEmail/contactName");
+    }
+    const existing = input.contactEmail
+      ? await prisma.contact.findFirst({
+          where: { workspaceId: session.workspaceId, email: input.contactEmail },
+        })
+      : null;
+
+    if (existing) {
+      contactId = existing.id;
+    } else {
+      const created = await prisma.contact.create({
+        data: {
+          workspaceId: session.workspaceId,
+          email: input.contactEmail || null,
+          name: input.contactName || null,
+          source: "imported",
+          lastSeenAt: new Date(),
+        },
+      });
+      contactId = created.id;
+    }
+  }
+
+  const conversation = await prisma.conversation.create({
+    data: {
+      workspaceId: session.workspaceId,
+      contactId,
+      channel: input.channel,
+      subject: input.subject || null,
+      status: "open",
+      lastMessageAt: new Date(),
+    },
+    include: { contact: true },
+  });
+
+  const messageId = `<${Date.now()}.${session.userId}@superprofile.app>`;
+
+  const message = await prisma.message.create({
+    data: {
+      conversationId: conversation.id,
+      workspaceId: session.workspaceId,
+      senderType: "agent",
+      senderUserId: session.userId,
+      bodyText: input.firstMessage,
+      bodyHtml: `<p>${input.firstMessage}</p>`,
+      channel: input.channel,
+      direction: "outbound",
+      emailMessageId: messageId,
+      deliveryStatus: "sent",
+    },
+  });
+
+  await broadcastToWorkspace(session.workspaceId, PUSHER_EVENTS.NEW_MESSAGE, {
+    conversationId: conversation.id,
+    message,
+  });
+
+  return { conversation, message };
+}
+

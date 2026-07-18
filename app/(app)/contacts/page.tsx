@@ -17,7 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn, formatRelativeTime, getInitials } from "@/lib/utils";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AddContactModal } from "@/components/contacts/add-contact-modal";
+import { ContactDrawer } from "@/components/contacts/contact-drawer";
 
 type Contact = {
   id: string;
@@ -44,12 +46,15 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 export default function ContactsPage() {
+  const router = useRouter();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
@@ -89,14 +94,25 @@ export default function ContactsPage() {
               {total.toLocaleString()} total contacts
             </p>
           </div>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={fetchContacts}
-            className="h-8 w-8"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs gap-1.5"
+              onClick={() => setShowAddContact(true)}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              Add Contact
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={fetchContacts}
+              className="h-8 w-8"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -171,7 +187,8 @@ export default function ContactsPage() {
                 return (
                   <tr
                     key={contact.id}
-                    className="border-b hover:bg-muted/20 transition-colors group"
+                    onClick={() => setSelectedContactId(contact.id)}
+                    className="border-b hover:bg-muted/20 transition-colors group cursor-pointer"
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">
@@ -243,16 +260,16 @@ export default function ContactsPage() {
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/inbox?contactId=${contact.id}`}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Button size="icon" variant="ghost" className="h-7 w-7">
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </td>
+                     <td className="px-4 py-3">
+                       <Button
+                         size="icon"
+                         variant="ghost"
+                         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                         onClick={(e) => { e.stopPropagation(); setSelectedContactId(contact.id); }}
+                       >
+                         <ChevronRight className="w-4 h-4" />
+                       </Button>
+                     </td>
                   </tr>
                 );
               })}
@@ -260,7 +277,7 @@ export default function ContactsPage() {
           </table>
         )}
 
-        {/* Pagination */}
+      {/* Pagination */}
         {total > 40 && !loading && (
           <div className="flex items-center justify-between px-6 py-3 border-t bg-background">
             <p className="text-xs text-muted-foreground">
@@ -290,6 +307,27 @@ export default function ContactsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Contact Modal */}
+      <AddContactModal
+        open={showAddContact}
+        onClose={() => setShowAddContact(false)}
+        onCreated={fetchContacts}
+      />
+
+      {/* Contact Drawer */}
+      <ContactDrawer
+        contactId={selectedContactId}
+        onClose={() => setSelectedContactId(null)}
+        onStartConversation={(id) => {
+          setSelectedContactId(null);
+          router.push(`/inbox?newConv=1&contactId=${id}`);
+        }}
+        onOpenConversation={(convId) => {
+          setSelectedContactId(null);
+          router.push(`/inbox?c=${convId}`);
+        }}
+      />
     </div>
   );
 }
