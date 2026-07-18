@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 import { slugify } from "@/lib/utils";
+import { suggestKBArticles } from "@/features/ai/service";
 import type {
   ArticleInput,
   UpdateArticleInput,
@@ -196,7 +197,7 @@ export async function publicSearch(opts: {
     ];
   }
 
-  const articles = await prisma.knowledgeBaseArticle.findMany({
+  let articles = await prisma.knowledgeBaseArticle.findMany({
     where,
     select: {
       id: true,
@@ -209,6 +210,39 @@ export async function publicSearch(opts: {
     orderBy: { publishedAt: "desc" },
     take: 20,
   });
+
+  // Natural-language questions ("my chat widget isn't loading") rarely match
+  // as a whole phrase — fall back to per-keyword scoring across all published
+  // articles so the widget's auto-suggest still surfaces relevant results.
+  if (!articles.length && wsId && q.trim().split(/\s+/).length >= 2) {
+    const published = await prisma.knowledgeBaseArticle.findMany({
+      where: { workspaceId: wsId, status: "published" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
+        searchText: true,
+        category: { select: { name: true, slug: true } },
+      },
+    });
+    const rankedIds = await suggestKBArticles(
+      q,
+      published.map((a) => ({
+        id: a.id,
+        title: a.title,
+        excerpt: [a.excerpt, a.searchText].filter(Boolean).join(" ") || null,
+        slug: a.slug,
+      }))
+    );
+    articles = rankedIds.flatMap((id) => {
+      const match = published.find((a) => a.id === id);
+      if (!match) return [];
+      const { searchText: _searchText, ...rest } = match;
+      return [rest];
+    });
+  }
 
   return { articles, query: q };
 }

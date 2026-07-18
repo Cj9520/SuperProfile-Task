@@ -2,8 +2,8 @@
 
 A production-ready, multi-tenant customer support platform built as a hiring assignment. Inspired by Intercom — featuring live chat, email support, a unified inbox, knowledge base, AI summaries, and custom domain support.
 
-**Live Demo:** [https://superprofile.vercel.app](https://superprofile.vercel.app)  
-**Widget Demo:** [https://superprofile.vercel.app/widget-demo](https://superprofile.vercel.app/widget-demo)  
+**Live Demo:** [https://chirag-red.vercel.app](https://chirag-red.vercel.app)  
+**Widget Demo:** [https://chirag-red.vercel.app/widget-demo](https://chirag-red.vercel.app/widget-demo)  
 **Support Email:** support+demo@superprofile.app
 
 ---
@@ -50,8 +50,8 @@ Fill in your values:
 | `DATABASE_URL` | PostgreSQL — [Neon](https://neon.tech) (free) for prod, or a local/Docker Postgres for dev. The Prisma provider is `postgresql`; SQLite is not supported. |
 | `NEXTAUTH_SECRET` | Any 32+ char random string (`openssl rand -base64 32`) |
 | `PUSHER_APP_ID` + keys | [pusher.com](https://pusher.com) free tier (set both server `PUSHER_*` and public `NEXT_PUBLIC_PUSHER_*`) |
-| `RESEND_API_KEY` | [resend.com](https://resend.com) free tier |
-| `GEMINI_API_KEY` | [aistudio.google.com](https://aistudio.google.com) free |
+| `EMAIL_ID` + `EMAIL_PASS` | SMTP credentials (e.g. Gmail app password) for outbound email via Nodemailer |
+| `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com) |
 
 See [`.env.example`](.env.example) for the full list with placeholders.
 
@@ -83,13 +83,13 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 14 App Router |
+| Framework | Next.js 16 App Router |
 | Language | TypeScript |
-| Database | PostgreSQL (Neon) / SQLite (dev) via Prisma |
+| Database | PostgreSQL (Neon) via Prisma |
 | Auth | JWT sessions (jose) + bcrypt |
 | Real-time | Pusher Channels |
-| Email (outbound) | Resend |
-| AI Summaries | Google Gemini 1.5 Flash |
+| Email (outbound) | Nodemailer (SMTP) |
+| AI Summaries | DeepSeek (deepseek-v4-flash) |
 | UI | Tailwind CSS + Radix UI primitives |
 | Rich text | Tiptap |
 
@@ -109,12 +109,15 @@ components/
   inbox/            → Conversation list, thread, sidebar
   layout/           → App sidebar
   ui/               → Shared components (Button, Input, etc.)
+features/
+  <domain>/         → Per-domain service + validation (ai, auth, contacts,
+                      conversations, domains, email, kb, notifications,
+                      reports, team, widget)
 lib/
   auth.ts           → JWT session management
   db.ts             → Prisma client singleton
   pusher.ts         → Real-time broadcasting
-  email.ts          → Resend email service
-  ai.ts             → Gemini AI integration
+  rate-limit.ts     → In-memory rate limiting
   utils.ts          → Shared utilities
 prisma/
   schema.prisma     → Database schema (12 models)
@@ -138,7 +141,7 @@ Find your widget token in **Settings** after creating your workspace.
 
 ## 📧 Email Setup
 
-### Inbound email (Resend/Mailgun)
+### Inbound email
 
 Configure your email provider to forward inbound emails to:
 ```
@@ -161,19 +164,18 @@ Replies are sent automatically when agents reply to email conversations. Threadi
 3. Add two DNS records:
    - **CNAME**: `help.yourcompany.com` → `your-app.vercel.app`
    - **TXT**: `_superprofile-verify.help.yourcompany.com` → `verification_token`
-4. SuperProfile checks DNS propagation
+4. **Verify** performs real DNS lookups (`dns.promises.resolveTxt` / `resolveCname`): the TXT record must contain the verification token (proves ownership → `verified`), and the CNAME must point at the app host (routing → SSL `active`)
 5. On success: domain is bound to workspace knowledge base
 
-**SSL provisioning**: Handled automatically via Vercel's SSL termination or Let's Encrypt when self-hosting. The backend state machine tracks `pending → verified` and `pending → active` (SSL) states faithfully even if automation is not wired end-to-end.
+**SSL provisioning**: Terminated by the platform — Vercel provisions certificates automatically once the CNAME resolves (Let's Encrypt when self-hosting). The app tracks `pending → verified` (ownership) and `pending → active` (SSL) states; certificate issuance itself is delegated to the platform rather than automated in-app.
 
 ---
 
 ## 🤖 AI Summaries
 
-- Powered by **Google Gemini 1.5 Flash** (free tier)
-- Triggered manually via refresh button in the right sidebar
-- Auto-suggested when conversation has 6+ messages
-- Graceful fallback: shows error notification if AI is unavailable
+- Powered by **DeepSeek** (`deepseek-v4-flash`, pinned explicitly — the `deepseek-chat` alias is avoided so provider re-pointing can't silently change the model) via its OpenAI-compatible API with `response_format: json_object`
+- Generated on demand from the right sidebar, and **auto-refreshed** when a conversation is opened with new messages since the last summary (guarded to one refresh per open — cost-aware by design)
+- Graceful fallback: failures raise a notification and a 503; the inbox keeps working
 - Structured output: summary, what user needs, what was tried, current status
 
 ---
@@ -214,8 +216,23 @@ generation automatically on every deploy. The Prisma provider is already
 
 | Decision | Rationale |
 |---|---|
-| SQLite for local dev | Zero setup, easy for evaluators. Switch to Postgres for production. |
 | Pusher over self-hosted WS | Managed, reliable, no infra ops. Free tier sufficient. |
-| Gemini over OpenAI | Free tier with 1M tokens/month. Drop-in swap possible. |
+| DeepSeek over OpenAI/Gemini | Cheap, fast, OpenAI-compatible API — called with plain `fetch`, no SDK dependency. |
 | In-memory rate limiting | Simple, effective for single-instance. Redis recommended for production. |
-| Custom domain DNS manual | Full state machine implemented. DNS automation requires infra (Cloudflare API) not feasible in 48h. |
+| DNS verification via Node lookups | Real TXT/CNAME checks with `dns/promises`; certificate issuance delegated to the platform (Vercel/Let's Encrypt) rather than automated in-app. |
+| KB suggest: keyword scoring | Phrase match first, per-keyword scoring fallback for natural-language questions. Embeddings-based retrieval deferred — overkill at this article volume. |
+
+## ✂️ What's Built vs. Skipped
+
+**All 7 core requirements are implemented** (auth/teams, chat widget with typing/presence/read receipts, email with threading, unified inbox, KB with widget auto-suggest, AI summaries, custom domains with real DNS verification).
+
+**Stretch features implemented:** contact timeline (past conversations, last seen, source), analytics dashboard (response times, resolution rate).
+
+**Skipped (and why):**
+- **AI auto-reply drafts, canned responses, SLA tracking, webhooks/public API** — deprioritized to keep the core seven production-quality within 48h.
+- **In-app SSL certificate automation** — delegated to Vercel's certificate provisioning; the app verifies ownership/routing via DNS and tracks state.
+
+**Known limitations:**
+- Rate limiting is in-memory (per-instance); use Redis for multi-instance deployments.
+- Widget presence is heuristic (agent activity within a time window), not socket-level presence.
+- Inbound email requires an email provider webhook (Resend/Mailgun/Postmark formats supported) pointed at `/api/email/inbound`.

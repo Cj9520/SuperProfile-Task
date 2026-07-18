@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Bot,
   User,
@@ -84,6 +84,26 @@ export function ConversationSidebar({
   useEffect(() => {
     fetch_();
   }, [conversationId, fetch_]);
+
+  // Keep the summary current as the conversation progresses: when new
+  // messages have arrived since the summary was generated, regenerate it
+  // once per conversation open (guarded so a failure can't retry-loop).
+  const autoRefreshedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!conversation?.aiSummary) return;
+    if (autoRefreshedFor.current === conversationId) return;
+    const stale =
+      conversation._count.messages > conversation.aiSummary.sourceMessageCount;
+    if (stale && !summarizing) {
+      autoRefreshedFor.current = conversationId;
+      fetch(`/api/ai/conversations/${conversationId}`, { method: "POST" })
+        .then((res) => {
+          if (res.ok) fetch_();
+        })
+        .catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation, conversationId]);
 
   async function assignTo(memberId: string | null) {
     const res = await fetch(`/api/conversations/${conversationId}`, {

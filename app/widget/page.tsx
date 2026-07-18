@@ -35,6 +35,7 @@ function WidgetPageContent() {
   const token = searchParams.get("token") || "";
 
   const [workspaceName, setWorkspaceName] = useState("Support");
+  const [workspaceId, setWorkspaceId] = useState("");
   const [visitorToken, setVisitorToken] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -52,6 +53,7 @@ function WidgetPageContent() {
   const [readMessageIds, setReadMessageIds] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pusherRef = useRef<PusherClient | null>(null);
   const channelRef = useRef<ReturnType<PusherClient["subscribe"]> | null>(null);
 
@@ -61,7 +63,10 @@ function WidgetPageContent() {
     fetch(`/api/widget/config/${token}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.workspace) setWorkspaceName(d.workspace.name);
+        if (d.workspace) {
+          setWorkspaceName(d.workspace.name);
+          setWorkspaceId(d.workspace.id);
+        }
       })
       .catch(() => {});
 
@@ -281,9 +286,14 @@ function WidgetPageContent() {
       }).catch(() => {});
     }, 2000);
 
-    // Live KB suggestion for longer queries (PRD §6.6.3, §12.3)
-    if (value.length >= 20) searchArticles(value);
-    else if (value.length < 5) setArticles([]);
+    // Live KB suggestion for longer queries (PRD §6.6.3, §12.3), debounced
+    // so we don't fire a search per keystroke.
+    if (suggestRef.current) clearTimeout(suggestRef.current);
+    if (value.length >= 20) {
+      suggestRef.current = setTimeout(() => searchArticles(value), 400);
+    } else if (value.length < 5) {
+      setArticles([]);
+    }
   };
 
   if (loading) {
@@ -453,7 +463,7 @@ function WidgetPageContent() {
                 {articles.slice(0, 3).map((a) => (
                   <a
                     key={a.id}
-                    href={`/help/${a.slug}`}
+                    href={`/help/${a.slug}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-xs text-zinc-800 hover:bg-stone-200 transition-colors"
@@ -562,7 +572,7 @@ function WidgetPageContent() {
               articles.map((a) => (
                 <a
                   key={a.id}
-                  href={`/help/${a.slug}`}
+                  href={`/help/${a.slug}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block p-3 rounded-xl border border-gray-100 hover:border-stone-300 hover:bg-stone-100 transition-all"
