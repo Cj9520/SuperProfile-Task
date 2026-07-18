@@ -253,7 +253,7 @@ export function ConversationThread({
 
         {/* ── Chip row — all share the same base style ── */}
         {/* Base chip: h-7 px-2.5 rounded-md text-xs font-medium border border-border */}
-        <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-1.5 shrink-0">
 
           {/* Channel chip — info only */}
           <span className={cn(
