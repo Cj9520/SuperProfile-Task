@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 import {
@@ -38,8 +39,7 @@ export async function createOrRecoverSession(input: SessionInput) {
   }
 
   const visitorToken =
-    input.visitorToken ||
-    `vt_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+    input.visitorToken || `vt_${randomUUID().replace(/-/g, "")}`;
 
   let contact = input.visitorEmail
     ? await prisma.contact.findFirst({

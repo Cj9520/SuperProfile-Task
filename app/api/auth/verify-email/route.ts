@@ -1,10 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  // Rate limit: 10 attempts per IP per 15 min (verification tokens must not
+  // be brute-forceable).
+  if (!checkRateLimit(`verify-email:${getClientIp(req)}`, 10, 15 * 60 * 1000)) {
+    return NextResponse.redirect(new URL("/login?error=too_many_attempts", req.url));
+  }
+
   const token = req.nextUrl.searchParams.get("token");
 
-  if (!token) {
+  if (!token || token.length > 64) {
     return NextResponse.redirect(
       new URL("/login?error=invalid_token", req.url)
     );

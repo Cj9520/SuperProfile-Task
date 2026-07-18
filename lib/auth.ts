@@ -2,10 +2,14 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
+import { ApiError } from "@/lib/http";
 
-const SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "superprofile-fallback-secret-key-32chars!!"
-);
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    "NEXTAUTH_SECRET is not set. Generate one with `openssl rand -base64 32`."
+  );
+}
+const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 const COOKIE_NAME = "sp_session";
 const TOKEN_EXPIRY = "7d";
@@ -74,13 +78,15 @@ export async function getSessionFromRequest(
 
 export async function requireSession(): Promise<SessionPayload> {
   const session = await getSession();
-  if (!session) throw new Error("UNAUTHORIZED");
+  if (!session) throw new ApiError(401, "Authentication required");
   return session;
 }
 
 export async function requireAdmin(): Promise<SessionPayload> {
   const session = await requireSession();
-  if (session.role !== "admin") throw new Error("FORBIDDEN");
+  if (session.role !== "admin") {
+    throw new ApiError(403, "You do not have permission to perform this action");
+  }
   return session;
 }
 

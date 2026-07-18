@@ -4,6 +4,15 @@
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
+/**
+ * Client IP for rate-limit keys. `x-forwarded-for` may be a comma-separated
+ * list; the first entry is the originating client (Vercel sets this).
+ */
+export function getClientIp(req: { headers: { get(name: string): string | null } }): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || "unknown";
+}
+
 export function checkRateLimit(
   key: string,
   limit: number,

@@ -188,9 +188,7 @@ function WidgetPageContent() {
     if (!name.trim()) return;
     setLoading(true);
     try {
-      const vt =
-        visitorToken ||
-        `vt_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+      const vt = visitorToken || `vt_${crypto.randomUUID().replace(/-/g, "")}`;
 
       const res = await fetch("/api/widget/session", {
         method: "POST",

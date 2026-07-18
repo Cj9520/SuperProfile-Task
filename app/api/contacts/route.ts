@@ -1,7 +1,15 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { getSession } from "@/lib/auth";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import { listContacts } from "@/features/contacts/service";
+
+const contactFiltersSchema = z.object({
+  search: z.string().max(200).default(""),
+  source: z.string().max(50).default(""),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(40),
+});
 
 // GET /api/contacts?search=...&source=...&page=1
 export async function GET(req: NextRequest) {
@@ -10,14 +18,15 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   try {
-    return apiSuccess(
-      await listContacts(session.workspaceId, {
-        search: searchParams.get("search") || "",
-        source: searchParams.get("source") || "",
-        page: Math.max(1, parseInt(searchParams.get("page") || "1")),
-        limit: Math.min(parseInt(searchParams.get("limit") || "40"), 100),
-      })
-    );
+    const filters = contactFiltersSchema.safeParse({
+      search: searchParams.get("search") || undefined,
+      source: searchParams.get("source") || undefined,
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+    });
+    if (!filters.success) return apiValidationError(filters.error);
+
+    return apiSuccess(await listContacts(session.workspaceId, filters.data));
   } catch (err) {
     return handleApiError(err, "contacts:list");
   }

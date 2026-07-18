@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import {
   updateConversationSchema,
   messageSchema,
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   try {
     const data = updateConversationSchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     const { id } = await params;
     return apiSuccess(await updateConversation(session, id, data.data));
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
   try {
     const data = messageSchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     const { id } = await params;
     return apiSuccess(await postMessage(session, id, data.data), 201);

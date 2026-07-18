@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import { articleSchema } from "@/features/kb/validation";
 import { listArticles, createArticle } from "@/features/kb/service";
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = articleSchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     return apiSuccess(await createArticle(session, data.data), 201);
   } catch (err) {

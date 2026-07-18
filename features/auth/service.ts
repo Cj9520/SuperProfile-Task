@@ -32,7 +32,7 @@ export async function signup(input: SignupInput) {
 
   const passwordHash = await bcrypt.hash(password, 12);
   const slug = await generateUniqueSlug(workspaceName);
-  const widgetToken = `wt_${Math.random().toString(36).slice(2, 18)}`;
+  const widgetToken = `wt_${randomUUID().replace(/-/g, "")}`;
   const emailVerificationToken = randomUUID();
 
   await prisma.$transaction(async (tx) => {
@@ -108,7 +108,9 @@ export async function login(input: LoginInput) {
     throw new ApiError(401, "Invalid email or password");
   }
 
-  if (!user.emailVerified) {
+  // Legacy accounts (created before email verification existed) have no
+  // verification token — let them in rather than locking them out.
+  if (!user.emailVerified && user.emailVerificationToken) {
     throw new ApiError(403, "Please verify your email before logging in. Check your inbox for the verification link.");
   }
 

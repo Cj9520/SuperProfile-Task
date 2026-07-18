@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import { updateArticleSchema } from "@/features/kb/validation";
 import { updateArticle, deleteArticle } from "@/features/kb/service";
 
@@ -12,7 +12,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   try {
     const data = updateArticleSchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     const { id } = await params;
     return apiSuccess(await updateArticle(session.workspaceId, id, data.data));

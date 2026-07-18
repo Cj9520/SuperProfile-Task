@@ -44,6 +44,34 @@ export function truncate(str: string, length: number): string {
   return str.length > length ? str.slice(0, length) + "…" : str;
 }
 
+/**
+ * Read the `{ error }` body of a failed API response and pick a message,
+ * falling back per status code when the body is missing or not JSON.
+ */
+export async function apiErrorMessage(res: Response): Promise<string> {
+  let serverMessage: string | undefined;
+  try {
+    const body = await res.json();
+    if (typeof body?.error === "string") serverMessage = body.error;
+  } catch {
+    // Non-JSON body (e.g. platform error page) — use the status fallback.
+  }
+  if (serverMessage) return serverMessage;
+
+  switch (res.status) {
+    case 401:
+      return "Please sign in to continue.";
+    case 403:
+      return "You don't have permission to do that.";
+    case 404:
+      return "We couldn't find what you were looking for.";
+    case 429:
+      return "Too many attempts. Please wait a few minutes and try again.";
+    default:
+      return "Something went wrong on our end. Please try again.";
+  }
+}
+
 // Strip HTML tags to get plain text (used for search indexing).
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();

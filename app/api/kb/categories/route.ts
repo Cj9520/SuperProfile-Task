@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import { categorySchema } from "@/features/kb/validation";
 import { listCategories, createCategory } from "@/features/kb/service";
 
@@ -8,7 +8,11 @@ export async function GET() {
   const session = await getSession();
   if (!session) return apiError("Authentication required", 401);
 
-  return apiSuccess(await listCategories(session.workspaceId));
+  try {
+    return apiSuccess(await listCategories(session.workspaceId));
+  } catch (err) {
+    return handleApiError(err, "kb:categories:list");
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -18,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = categorySchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     return apiSuccess(await createCategory(session.workspaceId, data.data), 201);
   } catch (err) {

@@ -6,9 +6,12 @@ import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 
 const COOKIE_NAME = "sp_session";
-const SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "superprofile-fallback-secret-key-32chars!!"
-);
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    "NEXTAUTH_SECRET is not set. Generate one with `openssl rand -base64 32`."
+  );
+}
+const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 export interface SessionPayload {
   userId: string;

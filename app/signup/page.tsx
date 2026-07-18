@@ -6,6 +6,7 @@ import { Zap, Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
+import { apiErrorMessage } from "@/lib/utils";
 
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,16 @@ export default function SignupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
       if (res.ok) {
         setSubmitted(true);
       } else {
-        toast.error(data.error || "Signup failed");
+        const message = await apiErrorMessage(res);
+        toast.error(message, {
+          duration: res.status === 409 || res.status === 429 ? 8000 : 4000,
+        });
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

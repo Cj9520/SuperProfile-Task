@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const conversationFiltersSchema = z.object({
-  status: z.string().optional(),
-  channel: z.string().optional(),
-  assigneeId: z.string().optional(),
-  search: z.string().optional(),
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(30),
+  status: z.enum(["open", "snoozed", "resolved"]).optional(),
+  channel: z.enum(["chat", "email"]).optional(),
+  assigneeId: z.string().max(64).optional(),
+  search: z.string().max(200).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
 });
 
 export const updateConversationSchema = z.object({

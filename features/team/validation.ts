@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 export const inviteSchema = z.object({
-  email: z.string().email(),
+  email: z
+    .string({ required_error: "Email is required" })
+    .trim()
+    .toLowerCase()
+    .max(254, "Email must be at most 254 characters")
+    .email("Please enter a valid email address"),
   role: z.enum(["admin", "agent"]),
 });
 

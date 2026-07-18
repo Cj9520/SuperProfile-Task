@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
+import { apiErrorMessage } from "@/lib/utils";
 
 function AcceptInviteContent() {
   const router = useRouter();
@@ -27,15 +28,18 @@ function AcceptInviteContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, ...form }),
       });
-      const data = await res.json();
       if (res.ok) {
         toast.success("Welcome to the team! 🎉");
         router.push("/inbox");
       } else {
-        toast.error(data.error || "Failed to accept invite");
+        const message = await apiErrorMessage(res);
+        // 410 = expired/invalid invite — keep it visible longer.
+        toast.error(message, {
+          duration: res.status === 410 || res.status === 429 ? 8000 : 4000,
+        });
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

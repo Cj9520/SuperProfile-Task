@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { apiError, apiSuccess, handleApiError } from "@/lib/http";
+import { apiError, apiSuccess, apiValidationError, handleApiError } from "@/lib/http";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { widgetMessageSchema } from "@/features/widget/validation";
 import { postWidgetMessage, getWidgetMessages } from "@/features/widget/service";
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = widgetMessageSchema.safeParse(await req.json());
-    if (!data.success) return apiError(data.error.errors[0].message, 422);
+    if (!data.success) return apiValidationError(data.error);
 
     return apiSuccess(await postWidgetMessage(data.data), 201);
   } catch (err) {

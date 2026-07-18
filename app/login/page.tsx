@@ -7,6 +7,7 @@ import { Zap, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
+import { apiErrorMessage } from "@/lib/utils";
 
 function LoginContent() {
   const router = useRouter();
@@ -34,15 +35,22 @@ function LoginContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         toast.success(`Welcome back, ${data.user?.name || ""}! 👋`);
         router.push(from);
       } else {
-        toast.error(data.error || "Invalid email or password");
+        const message = await apiErrorMessage(res);
+        // Unverified email (403) and rate limiting (429) deserve a longer,
+        // more prominent toast than a mistyped password.
+        if (res.status === 403 || res.status === 429) {
+          toast.error(message, { duration: 8000 });
+        } else {
+          toast.error(message);
+        }
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
