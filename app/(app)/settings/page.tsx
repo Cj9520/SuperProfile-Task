@@ -78,7 +78,7 @@ export default async function SettingsPage() {
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
               <a
-                href="/widget-demo"
+                href={`/widget-demo?token=${workspace.widgetToken}`}
                 target="_blank"
                 className="text-primary hover:underline flex items-center gap-1"
               >

@@ -7,12 +7,18 @@ export const metadata: Metadata = {
   description: "Test the SuperProfile live chat widget",
 };
 
-export default async function WidgetDemoPage() {
-  // Get first workspace widget token for demo
+type Props = { searchParams: Promise<{ token?: string }> };
+
+export default async function WidgetDemoPage({ searchParams }: Props) {
   const { prisma } = await import("@/lib/db");
-  const workspace = await prisma.workspace.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
+  const { token: tokenParam } = await searchParams;
+
+  // Look up the workspace by widgetToken from query param.
+  // Falls back to the first workspace if no token is provided.
+  const workspace = tokenParam
+    ? await prisma.workspace.findFirst({ where: { widgetToken: tokenParam } }) ??
+      await prisma.workspace.findFirst({ orderBy: { createdAt: "asc" } })
+    : await prisma.workspace.findFirst({ orderBy: { createdAt: "asc" } });
 
   const token = workspace?.widgetToken || "demo";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3001";
