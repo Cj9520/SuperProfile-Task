@@ -1,6 +1,25 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +43,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
       <body>
         {children}
         <Toaster
@@ -35,9 +58,9 @@ export default function RootLayout({
               background: "hsl(var(--card))",
               color: "hsl(var(--card-foreground))",
               border: "1px solid hsl(var(--border))",
-              borderRadius: "10px",
+              borderRadius: "8px",
               fontSize: "14px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
             },
           }}
         />

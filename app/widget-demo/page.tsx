@@ -23,7 +23,7 @@ export default async function WidgetDemoPage() {
         style={{
           margin: 0,
           fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-          background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)",
+          background: "#0b0b0d",
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
@@ -46,7 +46,7 @@ export default async function WidgetDemoPage() {
               width: 36,
               height: 36,
               borderRadius: 10,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              background: "#141416",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -89,7 +89,7 @@ export default async function WidgetDemoPage() {
             <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #a78bfa, #f472b6)",
+                background: "#26262b",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
@@ -173,7 +173,7 @@ export default async function WidgetDemoPage() {
                   border: "1px solid rgba(99,102,241,0.3)",
                   borderRadius: 100,
                   padding: "8px 18px",
-                  color: "#c7d2fe",
+                  color: "#a1a1aa",
                   fontSize: 13,
                 }}
               >

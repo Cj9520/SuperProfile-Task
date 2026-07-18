@@ -42,13 +42,13 @@
     "width:60px",
     "height:60px",
     "border-radius:50%",
-    "background:linear-gradient(135deg,#6366f1,#8b5cf6)",
+    "background:#141416",
     "border:none",
     "cursor:pointer",
     "display:flex",
     "align-items:center",
     "justify-content:center",
-    "box-shadow:0 8px 32px rgba(99,102,241,0.4)",
+    "box-shadow:0 8px 32px rgba(0,0,0,0.45)",
     "transition:transform 0.2s ease,box-shadow 0.2s ease",
     "outline:none",
     "position:relative",
@@ -58,11 +58,11 @@
 
   bubble.addEventListener("mouseenter", function () {
     bubble.style.transform = "scale(1.08)";
-    bubble.style.boxShadow = "0 12px 40px rgba(99,102,241,0.5)";
+    bubble.style.boxShadow = "0 12px 40px rgba(0,0,0,0.55)";
   });
   bubble.addEventListener("mouseleave", function () {
     bubble.style.transform = "scale(1)";
-    bubble.style.boxShadow = "0 8px 32px rgba(99,102,241,0.4)";
+    bubble.style.boxShadow = "0 8px 32px rgba(0,0,0,0.45)";
   });
 
   // Unread badge

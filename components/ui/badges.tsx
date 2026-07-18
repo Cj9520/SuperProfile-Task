@@ -55,7 +55,7 @@ export function ChannelBadge({ channel, className }: ChannelBadgeProps) {
         "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium",
         channel === "chat"
           ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400"
-          : "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
+          : "bg-stone-200 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-500",
         className
       )}
     >
@@ -76,7 +76,7 @@ export function RoleBadge({ role, className }: RoleBadgeProps) {
       className={cn(
         "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
         role === "admin"
-          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400"
+          ? "bg-stone-200 text-zinc-800 dark:bg-zinc-900 dark:text-gold"
           : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
         className
       )}

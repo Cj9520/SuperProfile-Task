@@ -23,9 +23,9 @@ const STEPS = [
     description: "Add an agent or admin to your workspace",
     href: "/team",
     cta: "Go to Team →",
-    color: "text-violet-500",
-    bg: "bg-violet-50 dark:bg-violet-950/30",
-    border: "border-violet-100 dark:border-violet-800/30",
+    color: "text-zinc-600",
+    bg: "bg-stone-100 dark:bg-zinc-900/40",
+    border: "border-stone-200 dark:border-zinc-700/40",
   },
   {
     id: "widget",
@@ -80,7 +80,7 @@ export function OnboardingChecklist({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div className="border rounded-2xl overflow-hidden bg-card shadow-sm animate-fade-in">
       {/* Header */}
-      <div className="px-5 py-4 border-b flex items-center justify-between bg-gradient-to-r from-primary/5 to-purple-500/5">
+      <div className="px-5 py-4 border-b flex items-center justify-between bg-gradient-to-r from-primary/5 to-zinc-500/5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary" />

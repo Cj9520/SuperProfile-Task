@@ -101,7 +101,7 @@ export default async function HelpPage({
             </div>
           </form>
 
-          <p className="text-indigo-200 text-sm mt-4">
+          <p className="text-zinc-400 text-sm mt-4">
             {articles.length} articles · {categories.length} categories
           </p>
         </div>

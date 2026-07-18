@@ -66,7 +66,7 @@ function AcceptInviteContent() {
       <div className="w-full max-w-md">
         <div className="bg-background rounded-2xl shadow-2xl p-8">
           <div className="flex items-center gap-2.5 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-xl">SuperProfile</span>

@@ -72,12 +72,12 @@ export default function SignupPage() {
       {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 -right-1/4 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl" />
-          <div className="absolute bottom-1/4 -left-1/4 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="absolute top-1/4 -right-1/4 w-80 h-80 rounded-full bg-zinc-500/10 blur-3xl" />
+          <div className="absolute bottom-1/4 -left-1/4 w-80 h-80 rounded-full bg-zinc-500/10 blur-3xl" />
         </div>
 
         <div className="flex items-center gap-3 relative">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 shadow-xl">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-800 shadow-xl">
             <Zap className="w-5 h-5 text-white" />
           </div>
           <span className="text-white font-bold text-xl">SuperProfile</span>
@@ -87,11 +87,11 @@ export default function SignupPage() {
           <h1 className="text-5xl font-extrabold text-white leading-tight mb-6">
             Start delivering
             <br />
-            <span className="text-indigo-300">exceptional</span>
+            <span className="text-zinc-400">exceptional</span>
             <br />
             support today.
           </h1>
-          <p className="text-indigo-200 text-lg">
+          <p className="text-zinc-400 text-lg">
             One workspace. Live chat, email, knowledge base, and AI — all in
             one place.
           </p>
@@ -107,13 +107,13 @@ export default function SignupPage() {
                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 </div>
-                <span className="text-indigo-200 text-sm">{item}</span>
+                <span className="text-zinc-400 text-sm">{item}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-indigo-300/50 text-sm relative">
+        <p className="text-zinc-400/50 text-sm relative">
           SuperProfile · Customer Communication Platform
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center bg-background p-8 rounded-l-3xl">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-800 to-zinc-900">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-lg">SuperProfile</span>

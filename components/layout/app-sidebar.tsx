@@ -86,7 +86,7 @@ export function AppSidebar({ user, workspace }: AppSidebarProps) {
     <aside className="flex flex-col w-64 min-h-screen bg-sidebar border-r border-sidebar-border relative">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-800 to-zinc-900 shadow-lg">
           <Zap className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">

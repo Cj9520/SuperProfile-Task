@@ -124,39 +124,39 @@ export default function DomainsPage() {
 
           {/* DNS instructions */}
           {lastInstructions && (
-            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-fade-in">
-              <h3 className="text-sm font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+            <div className="p-4 bg-stone-100 border border-stone-300 rounded-xl animate-fade-in">
+              <h3 className="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-2">
                 📋 DNS Configuration Required
               </h3>
-              <p className="text-sm text-indigo-700 mb-4">
+              <p className="text-sm text-zinc-800 mb-4">
                 Add these DNS records to verify your domain. Changes may take up
                 to 48 hours to propagate.
               </p>
 
               <div className="space-y-3">
                 {/* CNAME record */}
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
+                <div className="bg-white rounded-lg p-3 border border-stone-200">
                   <div className="grid grid-cols-3 gap-2 text-xs mb-1.5">
                     <div className="font-medium text-gray-500">Type</div>
                     <div className="font-medium text-gray-500">Name</div>
                     <div className="font-medium text-gray-500">Value</div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-sm font-mono">
-                    <div className="text-indigo-700 font-semibold">{lastInstructions.type}</div>
+                    <div className="text-zinc-800 font-semibold">{lastInstructions.type}</div>
                     <div className="text-gray-900 truncate">{lastInstructions.name}</div>
                     <div className="text-gray-900 truncate">{lastInstructions.value}</div>
                   </div>
                 </div>
 
                 {/* TXT verification record */}
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
+                <div className="bg-white rounded-lg p-3 border border-stone-200">
                   <div className="grid grid-cols-3 gap-2 text-xs mb-1.5">
                     <div className="font-medium text-gray-500">Type</div>
                     <div className="font-medium text-gray-500">Name</div>
                     <div className="font-medium text-gray-500">Value</div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-sm font-mono">
-                    <div className="text-indigo-700 font-semibold">TXT</div>
+                    <div className="text-zinc-800 font-semibold">TXT</div>
                     <div className="text-gray-900 truncate text-xs">{lastInstructions.txtRecord.name}</div>
                     <div className="flex items-center gap-1">
                       <span className="text-gray-900 text-xs truncate">
@@ -167,7 +167,7 @@ export default function DomainsPage() {
                           navigator.clipboard.writeText(lastInstructions.txtRecord.value);
                           toast.success("Copied!");
                         }}
-                        className="text-indigo-500 hover:text-indigo-700 shrink-0"
+                        className="text-zinc-500 hover:text-zinc-800 shrink-0"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
@@ -176,7 +176,7 @@ export default function DomainsPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-indigo-600 mt-3">
+              <p className="text-xs text-zinc-800 mt-3">
                 SSL certificate will be provisioned automatically via Let's Encrypt
                 after domain verification completes.
               </p>
