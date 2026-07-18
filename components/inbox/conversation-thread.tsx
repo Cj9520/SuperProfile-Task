@@ -222,9 +222,11 @@ export function ConversationThread({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b bg-background/80 backdrop-blur-sm gap-2 min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-background gap-3 min-w-0">
+
+        {/* Left — contact info */}
+        <div className="flex items-center gap-3 min-w-0">
           {/* Back button — mobile only */}
           {onBack && (
             <button
@@ -235,55 +237,75 @@ export function ConversationThread({
               <ChevronLeft className="w-4 h-4" />
             </button>
           )}
-          <Avatar className="h-8 w-8 shrink-0">
-            <AvatarFallback className="text-xs">{getInitials(displayName)}</AvatarFallback>
+
+          {/* Avatar */}
+          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-border">
+            <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
+              {getInitials(displayName)}
+            </AvatarFallback>
           </Avatar>
+
+          {/* Name + email + badges */}
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold truncate">{displayName}</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-semibold truncate leading-tight">{displayName}</h2>
+              {/* Inline badges — visible on sm+ */}
+              <div className="hidden sm:flex items-center gap-1.5">
+                <ChannelBadge channel={conversation.channel as "chat" | "email"} />
+                <StatusBadge status={conversation.status as "open" | "snoozed" | "resolved"} />
+              </div>
+            </div>
             {contact.email && (
-              <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+              <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+                {contact.email}
+              </p>
             )}
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-            <ChannelBadge channel={conversation.channel as "chat" | "email"} />
-            <StatusBadge status={conversation.status as "open" | "snoozed" | "resolved"} />
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Priority selector */}
+        {/* Right — action toolbar */}
+        <div className="flex items-center gap-1.5 shrink-0">
+
+          {/* Thin divider */}
+          <div className="hidden sm:block w-px h-5 bg-border mx-0.5" />
+
+          {/* Priority pill */}
           <div className="relative">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs gap-1 px-2"
+            <button
               onClick={() => setShowPriority(!showPriority)}
+              className={cn(
+                "flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium border transition-all hover:bg-muted",
+                currentPriority.value === "high"
+                  ? "border-red-200 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:border-red-900 dark:text-red-400"
+                  : currentPriority.value === "low"
+                  ? "border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-900 dark:text-blue-400"
+                  : "border-border text-muted-foreground bg-transparent"
+              )}
             >
-              <PriorityIcon className={cn("w-3.5 h-3.5", currentPriority.color)} />
-              <span className="hidden md:inline text-muted-foreground capitalize">
-                {currentPriority.label}
-              </span>
-            </Button>
+              <PriorityIcon className="w-3.5 h-3.5" />
+              <span className="hidden md:inline capitalize">{currentPriority.label}</span>
+            </button>
+
             {showPriority && (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowPriority(false)}
-                />
-                <div className="absolute top-full mt-1 right-0 bg-popover border border-border rounded-xl shadow-xl z-50 w-36 overflow-hidden">
+                <div className="fixed inset-0 z-40" onClick={() => setShowPriority(false)} />
+                <div className="absolute top-full mt-1.5 right-0 bg-popover border border-border rounded-xl shadow-2xl z-[100] w-36 overflow-hidden py-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 pt-1 pb-1.5">Priority</p>
                   {PRIORITY_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
+                    const active = conversation.priority === opt.value || (!conversation.priority && opt.value === "normal");
                     return (
                       <button
                         key={opt.value}
                         onClick={() => updatePriority(opt.value)}
                         className={cn(
-                          "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors text-left",
-                          conversation.priority === opt.value && "bg-muted"
+                          "w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted transition-colors text-left",
+                          active && "bg-muted font-medium"
                         )}
                       >
                         <Icon className={cn("w-3.5 h-3.5", opt.color)} />
                         {opt.label}
+                        {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
                       </button>
                     );
                   })}
@@ -292,46 +314,42 @@ export function ConversationThread({
             )}
           </div>
 
-          {/* Resolve button */}
+          {/* Resolve / Reopen button */}
           {conversation.status !== "resolved" ? (
-            <Button
-              size="sm"
-              variant="outline"
+            <button
               onClick={() => updateStatus("resolved")}
-              className="h-7 text-xs px-2"
+              className="flex items-center gap-1.5 h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-sm"
             >
-              <CheckCheck className="w-3.5 h-3.5 sm:mr-1" />
+              <CheckCheck className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Resolve</span>
-            </Button>
+            </button>
           ) : (
-            <Button
-              size="sm"
-              variant="outline"
+            <button
               onClick={() => updateStatus("open")}
-              className="h-7 text-xs px-2"
+              className="flex items-center gap-1.5 h-7 px-3 rounded-lg text-xs font-medium border border-border hover:bg-muted transition-all text-muted-foreground"
             >
               <span className="hidden sm:inline">Reopen</span>
               <span className="sm:hidden">↩</span>
-            </Button>
+            </button>
           )}
 
           {/* Snooze dropdown */}
           {conversation.status === "open" && (
             <div className="relative">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 text-xs px-2"
+              <button
                 onClick={() => setShowSnooze(!showSnooze)}
+                className="flex items-center gap-1 h-7 px-2 rounded-lg text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-all border border-transparent hover:border-border"
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span className="hidden md:inline ml-1">Snooze</span>
-                <ChevronDown className="w-3 h-3 ml-0.5" />
-              </Button>
+                <span className="hidden md:inline text-xs">Snooze</span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform", showSnooze && "rotate-180")} />
+              </button>
+
               {showSnooze && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowSnooze(false)} />
-                  <div className="absolute top-full mt-1 right-0 bg-popover border border-border rounded-xl shadow-xl z-50 w-44 overflow-hidden">
+                  <div className="absolute top-full mt-1.5 right-0 bg-popover border border-border rounded-xl shadow-2xl z-[100] w-48 overflow-hidden py-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 pt-1 pb-1.5">Snooze until</p>
                     {SNOOZE_OPTIONS.map((opt) => {
                       const snoozedUntil = new Date();
                       snoozedUntil.setHours(snoozedUntil.getHours() + opt.hours);
@@ -343,10 +361,15 @@ export function ConversationThread({
                               snoozedUntil: snoozedUntil.toISOString(),
                             })
                           }
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors flex items-center justify-between group"
                         >
-                          <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                          {opt.label}
+                          <span className="flex items-center gap-2">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground" />
+                            {opt.label}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {snoozedUntil.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
                         </button>
                       );
                     })}
