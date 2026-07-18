@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useDebounced } from "@/lib/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Inbox,
@@ -59,6 +60,7 @@ export default function InboxPage() {
   );
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounced(search, 300);
   const [statusFilter, setStatusFilter] = useState("open");
   const [channelFilter, setChannelFilter] = useState("");
   const [workspaceId, setWorkspaceId] = useState("");
@@ -70,7 +72,7 @@ export default function InboxPage() {
     const params = new URLSearchParams();
     if (statusFilter) params.set("status", statusFilter);
     if (channelFilter) params.set("channel", channelFilter);
-    if (search) params.set("search", search);
+    if (debouncedSearch) params.set("search", debouncedSearch);
 
     const res = await fetch(`/api/conversations?${params}`);
     if (res.ok) {
@@ -78,7 +80,7 @@ export default function InboxPage() {
       setConversations(data.conversations || []);
     }
     setLoading(false);
-  }, [statusFilter, channelFilter, search]);
+  }, [statusFilter, channelFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchConversations();

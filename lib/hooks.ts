@@ -1,0 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/** Debounce a fast-changing value (e.g. search input) before using it in a fetch. */
+export function useDebounced<T>(value: T, delayMs = 300): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+
+  return debounced;
+}

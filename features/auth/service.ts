@@ -27,7 +27,24 @@ export async function signup(input: SignupInput) {
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    throw new ApiError(409, "An account with this email already exists.");
+    if (existing.emailVerified || !existing.emailVerificationToken) {
+      throw new ApiError(409, "An account with this email already exists.");
+    }
+    // Unverified account: the email owner never confirmed it, so let whoever
+    // controls the address claim it again — refresh credentials and resend.
+    const passwordHash = await bcrypt.hash(password, 12);
+    const emailVerificationToken = randomUUID();
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { name, passwordHash, emailVerificationToken },
+    });
+    await sendVerificationEmail(email, emailVerificationToken).catch((err) =>
+      console.error("[signup] Failed to resend verification email:", err)
+    );
+    return {
+      message:
+        "This email already had an unverified account — we've sent a new verification link. Please check your inbox.",
+    };
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
