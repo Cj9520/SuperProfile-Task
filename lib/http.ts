@@ -33,10 +33,14 @@ export function apiValidationError(error: ZodError) {
     message: issue.message,
   }));
   const first = details[0];
+  const fieldLabel = humanizeField(first.field);
+  // Skip the field prefix when the message already names the field
+  // ("Password is required", not "Password: Password is required").
   const message =
-    first.field === "request"
+    first.field === "request" ||
+    first.message.toLowerCase().includes(fieldLabel.toLowerCase())
       ? first.message
-      : `${humanizeField(first.field)}: ${first.message}`;
+      : `${fieldLabel}: ${first.message}`;
   return Response.json(
     { error: message, details },
     { status: 422 }

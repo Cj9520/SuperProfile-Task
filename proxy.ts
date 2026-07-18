@@ -40,6 +40,13 @@ export async function proxy(req: NextRequest) {
 
   const session = await getSessionFromRequest(req);
   if (!session) {
+    // API clients get a JSON 401; page navigations redirect to login.
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("from", pathname);
