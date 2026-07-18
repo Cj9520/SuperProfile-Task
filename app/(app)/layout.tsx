@@ -23,7 +23,7 @@ export default async function AppLayout({
         user={{ name: user.name, email: user.email, avatarUrl: user.avatarUrl }}
         workspace={{ name: workspace.name, slug: workspace.slug }}
       />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto min-w-0 pt-12 lg:pt-0">{children}</main>
     </div>
   );
 }

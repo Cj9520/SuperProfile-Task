@@ -6,13 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Inbox,
   Search,
-  Filter,
   MessageSquare,
-  Mail,
-  ChevronDown,
   RefreshCw,
   Plus,
   X,
+  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +68,8 @@ export default function InboxPage() {
   );
   const [showNewConv, setShowNewConv] = useState(false);
   const [newConvPrefillContact, setNewConvPrefillContact] = useState<string | undefined>();
+  // Mobile: when a conversation is selected, show the thread pane (not list)
+  const [mobileShowThread, setMobileShowThread] = useState(false);
 
   // Auto-open new conversation modal if navigated from contacts page
   useEffect(() => {
@@ -129,9 +129,14 @@ export default function InboxPage() {
   const selectedConversation = conversations.find((c) => c.id === selectedId);
 
   return (
-    <div className="flex h-full">
-      {/* Conversation list pane */}
-      <div className="flex flex-col w-80 border-r bg-background shrink-0">
+    <div className="flex h-full overflow-hidden">
+      {/* ── Conversation list pane ── */}
+      {/* On mobile: hidden when thread is open */}
+      <div className={cn(
+        "flex flex-col border-r bg-background shrink-0",
+        "w-full sm:w-72 md:w-80",
+        mobileShowThread ? "hidden sm:flex" : "flex"
+      )}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div className="flex items-center gap-2">
@@ -237,19 +242,24 @@ export default function InboxPage() {
                 key={c.id}
                 conversation={c}
                 selected={c.id === selectedId}
-                onClick={() => setSelectedId(c.id)}
+                onClick={() => { setSelectedId(c.id); setMobileShowThread(true); }}
               />
             ))
           )}
         </div>
       </div>
 
-      {/* Main thread pane */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* ── Main thread pane ── */}
+      {/* On mobile: only visible when mobileShowThread is true */}
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0",
+        mobileShowThread ? "flex" : "hidden sm:flex"
+      )}>
         {selectedId ? (
           <ConversationThread
             conversationId={selectedId}
             onUpdate={fetchConversations}
+            onBack={() => setMobileShowThread(false)}
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center px-8 gap-6">
@@ -276,12 +286,14 @@ export default function InboxPage() {
         )}
       </div>
 
-      {/* Right sidebar — only when conversation selected */}
+      {/* ── Right sidebar — hidden below xl ── */}
       {selectedId && (
-        <ConversationSidebar
-          conversationId={selectedId}
-          onUpdate={fetchConversations}
-        />
+        <div className="hidden xl:block">
+          <ConversationSidebar
+            conversationId={selectedId}
+            onUpdate={fetchConversations}
+          />
+        </div>
       )}
 
       {/* New Conversation Modal */}
