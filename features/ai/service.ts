@@ -2,8 +2,7 @@ import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
-// "deepseek-chat" currently aliases to deepseek-v4-flash; pin pro explicitly
-const DEEPSEEK_MODEL = "deepseek-v4-pro";
+const DEEPSEEK_MODEL = "deepseek-v4-flash";
 
 export interface AISummaryResult {
   summaryText: string;
