@@ -1,18 +1,39 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/http";
 import { broadcastToWorkspace, PUSHER_EVENTS } from "@/lib/pusher";
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "onboarding@resend.dev";
+// SMTP_USER/SMTP_PASS with EMAIL_ID/EMAIL_PASS as accepted aliases;
+// host defaults to Gmail since that's the expected provider.
+const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_ID;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+// A leftover Resend sender can't be used through Gmail — fall back to the
+// authenticated address (Gmail rewrites mismatched From headers anyway).
+const FROM_EMAIL =
+  process.env.FROM_EMAIL && !process.env.FROM_EMAIL.endsWith("@resend.dev")
+    ? process.env.FROM_EMAIL
+    : SMTP_USER || "";
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
-// Lazily instantiate the Resend client. Constructing it at module load throws
-// when RESEND_API_KEY is unset (e.g. during `next build` page-data collection),
-// so defer it until an email is actually sent.
-let resendClient: Resend | null = null;
-function getResend(): Resend {
-  if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
-  return resendClient;
+// Lazily instantiate the SMTP transport so `next build` (where SMTP env vars
+// may be absent) never fails at module load — same pattern as before.
+let transporter: Transporter | null = null;
+function getTransporter(): Transporter {
+  if (!transporter) {
+    if (!SMTP_USER || !SMTP_PASS) {
+      throw new Error(
+        "SMTP is not configured — set SMTP_USER/SMTP_PASS (or EMAIL_ID/EMAIL_PASS)."
+      );
+    }
+    const port = Number(process.env.SMTP_PORT) || 587;
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port,
+      secure: port === 465, // TLS from the start on 465; STARTTLS otherwise
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
+  }
+  return transporter;
 }
 
 // ─── Signup email verification ────────────────────────────────────────────────
@@ -20,7 +41,7 @@ function getResend(): Resend {
 export async function sendVerificationEmail(email: string, token: string) {
   const link = `${APP_URL}/api/auth/verify-email?token=${token}`;
 
-  await getResend().emails.send({
+  await getTransporter().sendMail({
     from: FROM_EMAIL,
     to: email,
     subject: "Verify your email — SuperProfile",
@@ -63,7 +84,7 @@ export async function sendInviteEmail({
 }) {
   const acceptUrl = `${APP_URL}/invite/accept?token=${inviteToken}`;
 
-  await getResend().emails.send({
+  await getTransporter().sendMail({
     from: FROM_EMAIL,
     to,
     subject: `You've been invited to join ${workspaceName} on SuperProfile`,
@@ -120,22 +141,17 @@ export async function sendSupportReply({
   fromName: string;
   replyTo: string;
 }) {
-  const headers: Record<string, string> = {
-    "Message-ID": messageId,
-    "X-SuperProfile": "true",
-  };
-
-  if (inReplyTo) headers["In-Reply-To"] = inReplyTo;
-  if (references) headers["References"] = references;
-
-  await getResend().emails.send({
+  await getTransporter().sendMail({
     from: `${fromName} <${FROM_EMAIL}>`,
     to,
     replyTo,
     subject: subject.startsWith("Re:") ? subject : `Re: ${subject}`,
     html: bodyHtml,
     text: bodyText,
-    headers,
+    messageId,
+    inReplyTo: inReplyTo || undefined,
+    references: references || undefined,
+    headers: { "X-SuperProfile": "true" },
   });
 }
 
@@ -284,7 +300,7 @@ export async function sendNotificationEmail({
   ctaUrl?: string;
   ctaText?: string;
 }) {
-  await getResend().emails.send({
+  await getTransporter().sendMail({
     from: FROM_EMAIL,
     to,
     subject,
