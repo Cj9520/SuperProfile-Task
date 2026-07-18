@@ -1,69 +1,73 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Theme environments (see design.md):
+   light = "Nordic Studio" (architectural paper), dark = "Stealth Matte"
+   (charcoal monolith). Sidebar is always the monolith, with champagne-gold
+   accents from "Vanguard Gold". */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 60 9% 98%;
+    --foreground: 24 10% 5%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 24 10% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --popover-foreground: 24 10% 5%;
+    --primary: 24 10% 8%;
+    --primary-foreground: 60 9% 98%;
+    --secondary: 60 5% 94%;
+    --secondary-foreground: 24 10% 10%;
+    --muted: 60 5% 94%;
+    --muted-foreground: 25 5% 42%;
+    --accent: 60 5% 92%;
+    --accent-foreground: 24 10% 10%;
     --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 243 75% 59%;
-    --radius: 0.625rem;
-    --sidebar-background: 222 47% 10%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 243 75% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 14%;
-    --sidebar-accent-foreground: 210 40% 90%;
-    --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 243 75% 59%;
+    --destructive-foreground: 60 9% 98%;
+    --border: 20 6% 88%;
+    --input: 20 6% 86%;
+    --ring: 24 10% 8%;
+    --radius: 0.5rem;
+    --gold: 43 96% 56%;
+    --sidebar-background: 240 6% 7%;
+    --sidebar-foreground: 240 4% 82%;
+    --sidebar-primary: 43 96% 56%;
+    --sidebar-primary-foreground: 240 6% 6%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 5% 14%;
+    --sidebar-ring: 43 96% 56%;
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 243 75% 65%;
-    --primary-foreground: 220.9 39.3% 11%;
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 243 75% 59%;
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 243 75% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 210 40% 90%;
-    --sidebar-border: 222 47% 13%;
-    --sidebar-ring: 243 75% 59%;
+    --background: 240 6% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 6% 6%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 16%;
+    --input: 240 5% 18%;
+    --ring: 0 0% 90%;
+    --gold: 43 96% 56%;
+    --sidebar-background: 240 6% 6%;
+    --sidebar-foreground: 240 4% 82%;
+    --sidebar-primary: 43 96% 56%;
+    --sidebar-primary-foreground: 240 6% 6%;
+    --sidebar-accent: 240 5% 11%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 5% 13%;
+    --sidebar-ring: 43 96% 56%;
   }
 }
 
@@ -73,9 +77,16 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+  code, pre, kbd {
+    font-family: var(--font-mono), ui-monospace, monospace;
   }
 }
 
@@ -146,22 +157,26 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ─── Landing page gradient text ────────────────────────────────────────── */
+/* ─── Hero / accent surfaces (Stealth Matte monolith) ───────────────────── */
+/* Kept under their historical class names; no gradients — flat charcoal
+   with a subtle dotted alignment canvas, champagne-gold display accent. */
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: hsl(var(--gold));
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+  background-color: #0b0b0d;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.055) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(24, 24, 27, 0.6);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ─── Message bubble styles ─────────────────────────────────────────────── */

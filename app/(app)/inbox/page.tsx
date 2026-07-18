@@ -237,8 +237,8 @@ export default function InboxPage() {
             )}
             {!showOnboarding && (
               <>
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                  <MessageSquare className="w-10 h-10 text-indigo-500" />
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-stone-200 to-stone-100 flex items-center justify-center">
+                  <MessageSquare className="w-10 h-10 text-zinc-500" />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold mb-2">Select a conversation</h2>

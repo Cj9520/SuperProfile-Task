@@ -290,10 +290,10 @@ function WidgetPageContent() {
     return (
       <div className="h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
             <MessageSquare className="w-5 h-5 text-white" />
           </div>
-          <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+          <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
         </div>
       </div>
     );
@@ -307,7 +307,7 @@ function WidgetPageContent() {
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+        style={{ background: "#141416" }}
       >
         <div className="flex items-center gap-3">
           {view !== "home" && (
@@ -347,17 +347,17 @@ function WidgetPageContent() {
       {/* Home view */}
       {view === "home" && (
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 bg-gradient-to-b from-indigo-500/5 to-transparent">
+          <div className="p-4 bg-gradient-to-b from-zinc-500/5 to-transparent">
             <h2 className="text-base font-bold text-gray-900 mb-1">Hi there 👋</h2>
             <p className="text-sm text-gray-500">How can we help you today?</p>
           </div>
           <div className="px-4 space-y-2">
             <button
               onClick={() => setView("chat")}
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all text-left"
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-stone-300 hover:bg-stone-100 transition-all text-left"
             >
-              <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                <MessageSquare className="w-4 h-4 text-indigo-600" />
+              <div className="w-9 h-9 rounded-lg bg-stone-200 flex items-center justify-center shrink-0">
+                <MessageSquare className="w-4 h-4 text-zinc-800" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">Send us a message</p>
@@ -367,10 +367,10 @@ function WidgetPageContent() {
             </button>
             <button
               onClick={() => setView("search")}
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all text-left"
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-stone-300 hover:bg-stone-100 transition-all text-left"
             >
-              <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-                <BookOpen className="w-4 h-4 text-purple-600" />
+              <div className="w-9 h-9 rounded-lg bg-stone-200 flex items-center justify-center shrink-0">
+                <BookOpen className="w-4 h-4 text-zinc-500" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">Search help articles</p>
@@ -387,8 +387,8 @@ function WidgetPageContent() {
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
             {messages.length === 0 && (
               <div className="text-center py-6">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-3">
-                  <MessageSquare className="w-6 h-6 text-indigo-500" />
+                <div className="w-12 h-12 rounded-full bg-stone-200 flex items-center justify-center mx-auto mb-3">
+                  <MessageSquare className="w-6 h-6 text-zinc-500" />
                 </div>
                 <p className="text-sm text-gray-500">
                   Send us a message and we'll get back to you shortly.
@@ -403,7 +403,7 @@ function WidgetPageContent() {
                 <div
                   className={`max-w-[78%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     msg.senderType === "customer"
-                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      ? "bg-zinc-900 text-white rounded-br-sm"
                       : "bg-gray-100 text-gray-800 rounded-bl-sm"
                   }`}
                 >
@@ -415,8 +415,8 @@ function WidgetPageContent() {
                   {msg.senderType === "customer" && (
                     <p className={`text-[9px] mt-0.5 text-right transition-colors ${
                       readMessageIds.has(msg.id)
-                        ? "text-indigo-200"
-                        : "text-indigo-400/50"
+                        ? "text-zinc-400"
+                        : "text-gold/50"
                     }`}>
                       {readMessageIds.has(msg.id) ? "✓✓ Seen" : "✓ Sent"}
                     </p>
@@ -446,7 +446,7 @@ function WidgetPageContent() {
           {articles.length > 0 && (
             <div className="px-4 pb-2">
               <p className="text-xs text-gray-400 mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-indigo-400" />
+                <Sparkles className="w-3 h-3 text-gold" />
                 Suggested articles
               </p>
               <div className="space-y-1">
@@ -456,7 +456,7 @@ function WidgetPageContent() {
                     href={`/help/${a.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-xs text-zinc-800 hover:bg-stone-200 transition-colors"
                   >
                     <BookOpen className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{a.title}</span>
@@ -472,13 +472,13 @@ function WidgetPageContent() {
               <p className="text-xs font-medium text-gray-700 mb-2">Let us know who you are:</p>
               <div className="space-y-2 mb-2">
                 <input
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-indigo-400 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-gold transition-colors"
                   placeholder="Your name *"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
                 <input
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-indigo-400 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-gold transition-colors"
                   type="email"
                   placeholder="Email (optional)"
                   value={email}
@@ -489,7 +489,7 @@ function WidgetPageContent() {
                 onClick={startChat}
                 disabled={!name.trim() || loading}
                 className="w-full py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
+                style={{ background: "#141416" }}
               >
                 {loading ? "Starting…" : "Start chat →"}
               </button>
@@ -498,7 +498,7 @@ function WidgetPageContent() {
             <div className="p-3 border-t">
               <div className="flex items-end gap-2">
                 <textarea
-                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-indigo-400 transition-colors resize-none"
+                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-gold transition-colors resize-none"
                   placeholder="Type a message…"
                   rows={2}
                   value={input}
@@ -514,7 +514,7 @@ function WidgetPageContent() {
                   onClick={sendMessage}
                   disabled={!input.trim() || sending}
                   className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
-                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
+                  style={{ background: "#141416" }}
                 >
                   {sending ? (
                     <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -535,7 +535,7 @@ function WidgetPageContent() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-indigo-400 transition-colors"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-gold transition-colors"
                 placeholder="Search articles…"
                 value={searchQuery}
                 onChange={(e) => {
@@ -553,7 +553,7 @@ function WidgetPageContent() {
                 <p className="text-sm text-gray-500">No articles found</p>
                 <button
                   onClick={() => setView("chat")}
-                  className="text-indigo-600 text-sm mt-2 hover:underline"
+                  className="text-zinc-800 text-sm mt-2 hover:underline"
                 >
                   Ask us directly →
                 </button>
@@ -565,7 +565,7 @@ function WidgetPageContent() {
                   href={`/help/${a.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all"
+                  className="block p-3 rounded-xl border border-gray-100 hover:border-stone-300 hover:bg-stone-100 transition-all"
                 >
                   <p className="text-sm font-medium text-gray-900">{a.title}</p>
                   {a.excerpt && (
@@ -585,7 +585,7 @@ export default function WidgetPage() {
   return (
     <Suspense fallback={
       <div className="h-screen w-full flex items-center justify-center bg-white">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
       </div>
     }>
       <WidgetPageContent />

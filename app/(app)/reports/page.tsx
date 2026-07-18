@@ -79,7 +79,7 @@ function MiniBarChart({ data, maxVal }: { data: ChartPoint[]; maxVal: number }) 
               {p.conversations} new · {p.resolved} resolved
             </div>
             <div
-              className="w-full rounded-t-sm bg-indigo-200 dark:bg-indigo-800"
+              className="w-full rounded-t-sm bg-zinc-300 dark:bg-zinc-700"
               style={{ height: `${convH}px` }}
             />
             <div
@@ -169,8 +169,8 @@ export default function ReportsPage() {
                   label: "New conversations",
                   value: data.metrics.totalConversations.toLocaleString(),
                   icon: MessageSquare,
-                  color: "text-indigo-500",
-                  bg: "bg-indigo-50",
+                  color: "text-zinc-500",
+                  bg: "bg-stone-100",
                 },
                 {
                   label: "Resolved",
@@ -204,8 +204,8 @@ export default function ReportsPage() {
                   label: "Messages sent",
                   value: data.metrics.totalMessages.toLocaleString(),
                   icon: Mail,
-                  color: "text-purple-500",
-                  bg: "bg-purple-50",
+                  color: "text-zinc-500",
+                  bg: "bg-stone-100",
                 },
                 {
                   label: "New contacts",
@@ -253,7 +253,7 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-sm bg-indigo-200" />
+                    <div className="w-3 h-3 rounded-sm bg-zinc-300" />
                     New
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -327,9 +327,9 @@ export default function ReportsPage() {
                               className={cn(
                                 "h-full rounded-full",
                                 ch.channel === "chat"
-                                  ? "bg-indigo-500"
+                                  ? "bg-zinc-800"
                                   : ch.channel === "email"
-                                  ? "bg-purple-500"
+                                  ? "bg-zinc-700"
                                   : "bg-amber-500"
                               )}
                               style={{ width: `${pct}%` }}

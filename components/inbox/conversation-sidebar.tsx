@@ -264,8 +264,8 @@ export function ConversationSidebar({
 
         {conversation.aiSummary ? (
           <div className="space-y-3 animate-fade-in">
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-100">
-              <p className="text-xs text-indigo-900 leading-relaxed">
+            <div className="bg-gradient-to-br from-stone-100 to-stone-50 rounded-xl p-3 border border-stone-200">
+              <p className="text-xs text-zinc-900 leading-relaxed">
                 {conversation.aiSummary.summaryText}
               </p>
             </div>

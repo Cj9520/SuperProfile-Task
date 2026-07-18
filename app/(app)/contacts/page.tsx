@@ -38,7 +38,7 @@ const SOURCE_FILTERS = [
 
 const SOURCE_COLORS: Record<string, string> = {
   chat: "bg-blue-100 text-blue-700",
-  email: "bg-purple-100 text-purple-700",
+  email: "bg-stone-200 text-zinc-500",
   api: "bg-orange-100 text-orange-700",
   default: "bg-gray-100 text-gray-600",
 };
@@ -139,8 +139,8 @@ export default function ContactsPage() {
           </div>
         ) : contacts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center px-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-indigo-400" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-50 flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-gold" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
               {search ? "No contacts match your search" : "No contacts yet"}
