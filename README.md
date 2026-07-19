@@ -2,9 +2,10 @@
 
 A production-ready, multi-tenant customer support platform built as a hiring assignment. Inspired by Intercom — featuring live chat, email support, a unified inbox, knowledge base, AI summaries, and custom domain support.
 
-**Live Demo:** [https://chirag-red.vercel.app](https://chirag-red.vercel.app)  
-**Widget Demo:** [https://chirag-red.vercel.app/widget-demo](https://chirag-red.vercel.app/widget-demo)  
-**Support Email:** support+demo@superprofile.app
+**Live Demo:** [https://super-profile-task.vercel.app](https://super-profile-task.vercel.app)
+**Widget Demo:** [https://super-profile-task.vercel.app/widget-demo](https://super-profile-task.vercel.app/widget-demo)
+
+> **Demo credentials:** `admin@acme.com` / `password123`, `agent@acme.com` / `password123`
 
 ---
 
@@ -32,8 +33,8 @@ A production-ready, multi-tenant customer support platform built as a hiring ass
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url>
-cd superprofile
+git clone https://github.com/Cj9520/SuperProfile-Task.git
+cd SuperProfile-Task
 npm install
 ```
 
@@ -45,28 +46,39 @@ cp .env.example .env.local
 
 Fill in your values:
 
-| Variable | Source |
-|---|---|
-| `DATABASE_URL` | PostgreSQL — [Neon](https://neon.tech) (free) for prod, or a local/Docker Postgres for dev. The Prisma provider is `postgresql`; SQLite is not supported. |
-| `NEXTAUTH_SECRET` | Any 32+ char random string (`openssl rand -base64 32`) |
-| `PUSHER_APP_ID` + keys | [pusher.com](https://pusher.com) free tier (set both server `PUSHER_*` and public `NEXT_PUBLIC_PUSHER_*`) |
-| `EMAIL_ID` + `EMAIL_PASS` | SMTP credentials (e.g. Gmail app password) for outbound email via Nodemailer |
-| `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com) |
+| Variable | Description | Source |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | [Neon](https://neon.tech) (free) or local Docker |
+| `NEXTAUTH_SECRET` | 32+ char random string | `openssl rand -base64 32` |
+| `NEXT_PUBLIC_APP_URL` | Your app's public URL | e.g. `http://localhost:3000` |
+| `APP_URL` | Same as above (server-side) | e.g. `http://localhost:3000` |
+| `PUSHER_APP_ID` | Pusher app ID | [pusher.com](https://pusher.com) free tier |
+| `PUSHER_KEY` | Pusher key | Same account |
+| `PUSHER_SECRET` | Pusher secret | Same account |
+| `PUSHER_CLUSTER` | e.g. `ap2` | Same account |
+| `NEXT_PUBLIC_PUSHER_KEY` | Same as `PUSHER_KEY` | Public env |
+| `NEXT_PUBLIC_PUSHER_CLUSTER` | Same as `PUSHER_CLUSTER` | Public env |
+| `EMAIL_ID` | SMTP sender email | Gmail account |
+| `EMAIL_PASS` | SMTP password | Gmail app password |
+| `DEEPSEEK_API_KEY` | AI API key | [platform.deepseek.com](https://platform.deepseek.com) |
+| `INBOUND_EMAIL_SECRET` | Webhook secret for inbound email | Any random string |
+| `WIDGET_URL` | Widget iframe URL | Same as `APP_URL` |
 
-See [`.env.example`](.env.example) for the full list with placeholders.
-
-**Local Postgres via Docker (quick):**
+**Local Postgres via Docker:**
 ```bash
-docker run -d --name sp-postgres -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=superprofile -p 55432:5432 postgres:16-alpine
+docker run -d --name sp-postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=superprofile \
+  -p 55432:5432 postgres:16-alpine
+
 # DATABASE_URL="postgresql://postgres:postgres@localhost:55432/superprofile?schema=public"
 ```
 
 ### 3. Set up database
 
 ```bash
-npm run db:push      # Create tables from Prisma schema
-npm run db:generate  # Generate Prisma client
+npm run db:push      # Push Prisma schema → create tables
+npm run db:generate  # Generate Prisma client types
 ```
 
 ### 4. Run locally
@@ -75,164 +87,343 @@ npm run db:generate  # Generate Prisma client
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📦 Stack
+## 📦 Tech Stack
 
-| Layer | Technology |
+| Layer | Technology | Version |
+|---|---|---|
+| Framework | Next.js App Router | 16.2.x |
+| Language | TypeScript | 5.x |
+| Database | PostgreSQL (Neon)via Prisma ORM | Prisma 5.22 |
+| Auth | JWT (jose) + bcrypt sessions | jose 5.x |
+| Real-time | Pusher Channels | pusher 5.x / pusher-js 8.x |
+| Email (outbound) | Nodemailer (SMTP) | 9.x |
+| AI Summaries | DeepSeek API (`deepseek-v4-flash`) | via fetch |
+| UI Primitives | Radix UI | 1.x–2.x |
+| Styling | Tailwind CSS | 3.4.x |
+| Rich Text Editor | Tiptap | 2.10.x |
+| Validation | Zod | 3.x |
+| Toast Notifications | react-hot-toast | 2.x |
+
+### Why these choices?
+
+| Choice | Rationale |
 |---|---|
-| Framework | Next.js 16 App Router |
-| Language | TypeScript |
-| Database | PostgreSQL (Neon) via Prisma |
-| Auth | JWT sessions (jose) + bcrypt |
-| Real-time | Pusher Channels |
-| Email (outbound) | Nodemailer (SMTP) |
-| AI Summaries | DeepSeek (deepseek-v4-flash) |
-| UI | Tailwind CSS + Radix UI primitives |
-| Rich text | Tiptap |
+| **Next.js App Router** | Server components for zero-JS page shells; API routes co-located with feature code |
+| **Prisma + PostgreSQL** | Strong typing, migrations, multi-tenant isolation via `workspaceId` on every query |
+| **Pusher** | Managed WebSocket infra — no ops overhead. Free tier covers the demo comfortably |
+| **DeepSeek over OpenAI/Gemini** | OpenAI-compatible API, cheap, fast. Called with plain `fetch` — no SDK lock-in |
+| **Nodemailer (SMTP)** | No third-party dependency for outbound email; works with any SMTP provider |
+| **JWT httpOnly cookies** | Stateless sessions with server-side validation; no DB hit per request |
 
 ---
 
-## 🏗 Architecture
+## 🏗️ Architecture
+
+### Directory Layout
 
 ```
-app/
-  (public)/         → Landing, login, signup, public KB
-  (app)/            → Authenticated dashboard (inbox, KB, team, settings, domains)
-  api/              → All REST API routes
-  widget/           → Embeddable chat widget iframe
-  widget-demo/      → Demo page for evaluators
-  help/             → Public knowledge base
-components/
-  inbox/            → Conversation list, thread, sidebar
-  layout/           → App sidebar
-  ui/               → Shared components (Button, Input, etc.)
-features/
-  <domain>/         → Per-domain service + validation (ai, auth, contacts,
-                      conversations, domains, email, kb, notifications,
-                      reports, team, widget)
-lib/
-  auth.ts           → JWT session management
-  db.ts             → Prisma client singleton
-  pusher.ts         → Real-time broadcasting
-  rate-limit.ts     → In-memory rate limiting
-  utils.ts          → Shared utilities
-prisma/
-  schema.prisma     → Database schema (12 models)
-public/
-  widget-loader.js  → Embeddable widget script
+SuperProfile/
+├── app/
+│   ├── (public)/           # Landing, login, signup pages
+│   ├── (app)/              # Authenticated dashboard
+│   │   ├── inbox/          # Unified inbox (conversations)
+│   │   ├── contacts/       # Contact management
+│   │   ├── knowledge-base/ # KB article CRUD
+│   │   ├── reports/        # Analytics dashboard
+│   │   ├── team/           # Team management & invites
+│   │   ├── settings/       # Workspace settings + widget token
+│   │   └── domains/        # Custom domain configuration
+│   ├── api/                # 13 REST API route groups
+│   │   ├── ai/             # AI summary endpoint
+│   │   ├── auth/           # signup, login, logout, /me
+│   │   ├── contacts/       # CRUD + conversation linking
+│   │   ├── conversations/  # List, get, patch status/priority/assignee
+│   │   ├── domains/        # DNS verify, bind, status
+│   │   ├── email/          # Inbound webhook + reply dispatch
+│   │   ├── invites/        # Team invite flow
+│   │   ├── kb/             # Article + category CRUD
+│   │   ├── notifications/  # Bell notifications
+│   │   ├── public/         # Widget API (unauthenticated)
+│   │   ├── reports/        # Metrics aggregation
+│   │   ├── team/           # Member management
+│   │   └── widget/         # Chat session + message handling
+│   ├── widget/             # Embeddable chat widget (iframe)
+│   ├── widget-demo/        # Per-workspace live preview page
+│   └── help/               # Public knowledge base (custom domain target)
+├── components/
+│   ├── inbox/              # Conversation list, thread, sidebar, modals
+│   ├── layout/             # App sidebar (responsive, mobile overlay)
+│   └── ui/                 # Shared primitives (Button, Input, Badges, etc.)
+├── features/
+│   ├── ai/                 # DeepSeek summary service
+│   ├── auth/               # JWT helpers, session management
+│   ├── contacts/           # Contact service + validation
+│   ├── conversations/      # Conversation + message service
+│   ├── domains/            # DNS verification logic
+│   ├── email/              # Nodemailer SMTP dispatcher
+│   ├── kb/                 # Knowledge base service
+│   ├── notifications/      # Notification fan-out
+│   ├── reports/            # Metrics queries
+│   ├── team/               # Invite flow, role enforcement
+│   └── widget/             # Widget session + message handling
+├── lib/
+│   ├── auth.ts             # JWT sign/verify, session cookie helpers
+│   ├── db.ts               # Prisma client singleton
+│   ├── pusher.ts           # Server broadcaster + client factory
+│   ├── rate-limit.ts       # In-memory per-IP rate limiting
+│   └── utils.ts            # cn(), getInitials(), formatRelativeTime()
+├── prisma/
+│   └── schema.prisma       # 12 models (see below)
+└── public/
+    └── widget-loader.js    # 1-tag embed script
+```
+
+### Database Schema (12 models)
+
+```
+User               — global user account (email + password + verification)
+Workspace          — multi-tenant root; holds widgetToken, slug, supportEmail
+WorkspaceMember    — user↔workspace join; role = admin | agent
+Contact            — visitor/customer record per workspace
+Conversation       — thread (channel: chat | email, status, priority, assignee)
+Message            — individual message (senderType: agent | contact | system)
+ChatSession        — anonymous widget session linked to a Contact
+KnowledgeBaseCategory  — KB top-level grouping
+KnowledgeBaseArticle   — rich-text article (Tiptap HTML + plain text for search)
+AiSummary          — cached DeepSeek summary per conversation
+CustomDomain       — domain record (status: pending → verified → active)
+Notification       — in-app bell notification per workspace member
+```
+
+### Request Flow
+
+```
+Browser                Next.js Server           External
+  │                        │
+  ├─ GET /inbox ──────────▶│ App Router page (server component)
+  │                        │ getSession() → JWT cookie → userId + workspaceId
+  │                        │
+  ├─ POST /api/conversations├─▶ Zod validation
+  │                        │   Prisma INSERT (workspaceId enforced)
+  │                        │   Pusher trigger → all agents on workspace channel
+  │                        │
+  ├─ Widget iframe ────────▶│ /widget route (public, no auth)
+  │  (widgetToken)         │ POST /api/widget/message
+  │                        │   ChatSession lookup → Contact upsert → Message INSERT
+  │                        │   Pusher trigger → conversation channel
+  │
+  │                        │◀─────── POST /api/email/inbound ── Email provider webhook
+  │                        │   Parse → Contact upsert → Conversation upsert → Message
+  │                        │   Pusher trigger → agent inbox
 ```
 
 ---
 
-## 💬 Widget Embed
+## 💬 Chat Widget
 
-Install on any website with one line:
+Install on any website with a single `<script>` tag:
 
 ```html
-<script src="https://your-domain.com/widget-loader.js" data-widget-token="your_token"></script>
+<script src="https://super-profile-task.vercel.app/widget-loader.js"
+        data-widget-token="YOUR_WORKSPACE_TOKEN">
+</script>
 ```
 
-Find your widget token in **Settings** after creating your workspace.
+Find your token in **Settings → Widget Token**. Each workspace has its own isolated token; the live demo button in Settings opens `/widget-demo?token=<your_token>` so you always preview your own workspace's widget.
+
+**Widget features:**
+- Floating chat bubble with open/close animation
+- Persistent session (anonymous visitor → Contact record on first message)
+- Real-time message delivery via Pusher
+- Typing indicators from agent side
+- Article suggestions from your Knowledge Base
+- Returning visitor recognition (session cookie)
 
 ---
 
-## 📧 Email Setup
+## 📧 Email Pipeline
 
-### Inbound email
+### Inbound email → Inbox
 
-Configure your email provider to forward inbound emails to:
+Configure your email provider to `POST` to:
+
 ```
-POST https://your-domain.com/api/email/inbound
-Header: x-webhook-secret: your_INBOUND_EMAIL_SECRET
+https://your-domain.com/api/email/inbound
+x-webhook-secret: <INBOUND_EMAIL_SECRET>
 ```
 
-Supported payload formats: Resend, Mailgun, Postmark
+Supported payload formats: **Resend**, **Mailgun**, **Postmark** (parsed in `features/email/service.ts`).
 
-### Outbound email
+The webhook:
+1. Parses sender, subject, body (text + HTML)
+2. Upserts a `Contact` by email
+3. Creates or threads a `Conversation` (by `Message-ID` / `References` headers)
+4. Creates a `Message` record
+5. Fires a Pusher event → appears instantly in inbox
 
-Replies are sent automatically when agents reply to email conversations. Threading headers (Message-ID, In-Reply-To, References) ensure proper thread continuity in email clients.
+### Outbound (agent reply)
+
+When an agent replies to an email conversation, Nodemailer sends via SMTP with proper threading headers (`Message-ID`, `In-Reply-To`, `References`) so the reply lands in the customer's thread.
 
 ---
 
 ## 🌐 Custom Domain Configuration
 
-1. Admin adds hostname in **Domains** settings (e.g., `help.yourcompany.com`)
-2. System generates DNS verification instructions
-3. Add two DNS records:
-   - **CNAME**: `help.yourcompany.com` → `your-app.vercel.app`
-   - **TXT**: `_superprofile-verify.help.yourcompany.com` → `verification_token`
-4. **Verify** performs real DNS lookups (`dns.promises.resolveTxt` / `resolveCname`): the TXT record must contain the verification token (proves ownership → `verified`), and the CNAME must point at the app host (routing → SSL `active`)
-5. On success: domain is bound to workspace knowledge base
+1. Admin adds a hostname in **Domains** (e.g. `help.yourcompany.com`)
+2. System generates a verification token → stored as `CustomDomain`
+3. Admin adds two DNS records:
+   - `CNAME`: `help.yourcompany.com` → `super-profile-task.vercel.app`
+   - `TXT`: `_superprofile-verify.help.yourcompany.com` → `<verification_token>`
+4. Click **Verify** → `dns.promises.resolveTxt` checks TXT ownership; `resolveCname` checks routing
+5. Domain binds to workspace knowledge base → `GET help.yourcompany.com` serves your KB
 
-**SSL provisioning**: Terminated by the platform — Vercel provisions certificates automatically once the CNAME resolves (Let's Encrypt when self-hosting). The app tracks `pending → verified` (ownership) and `pending → active` (SSL) states; certificate issuance itself is delegated to the platform rather than automated in-app.
+**SSL** is terminated by Vercel automatically once the CNAME resolves (Let's Encrypt). The app tracks `pending → verified → active` but does not manage certificates itself.
 
 ---
 
 ## 🤖 AI Summaries
 
-- Powered by **DeepSeek** (`deepseek-v4-flash`, pinned explicitly — the `deepseek-chat` alias is avoided so provider re-pointing can't silently change the model) via its OpenAI-compatible API with `response_format: json_object`
-- Generated on demand from the right sidebar, and **auto-refreshed** when a conversation is opened with new messages since the last summary (guarded to one refresh per open — cost-aware by design)
-- Graceful fallback: failures raise a notification and a 503; the inbox keeps working
-- Structured output: summary, what user needs, what was tried, current status
+- Powered by **DeepSeek** (`deepseek-v4-flash`, explicitly pinned — the `deepseek-chat` alias is avoided so provider re-pointing can't silently change the model)
+- Called via the OpenAI-compatible API endpoint using plain `fetch` with `response_format: json_object` — no SDK dependency
+- **Structured output:** `{ summary, what_user_needs, what_was_tried, current_status }`
+- **Auto-refreshed** when a conversation is opened and has new messages since the last summary (one refresh per open — cost-aware)
+- Results are cached in the `AiSummary` table; regeneration is manual from the right sidebar
+- Graceful fallback: failures surface a toast and `503`; the inbox keeps working
+
+---
+
+## 👥 Inbox & Conversation Management
+
+The inbox is the core of the platform:
+
+- **Unified channel view** — chat and email conversations in one list
+- **Filters** — by status (`open` / `snoozed` / `resolved`), channel, assignee, and free-text search
+- **Status management** — Resolve, Reopen, Snooze (with time picker)
+- **Priority** — Low / Normal / High, shown as a colored chip in the header
+- **Assignment** — assign to any workspace agent from the right sidebar
+- **Contact drawer** — click any contact name to view their profile, email, and conversation history
+- **New conversation** — start chat or email conversation from inbox or contacts page
+- **Real-time** — Pusher updates conversation list and message thread live; no polling
+
+### Responsive layout
+- **Mobile (`< sm`):** full-screen list or full-screen thread (toggled by tapping, with ← back button)
+- **Tablet (`sm–xl`):** list + thread side by side; right sidebar hidden
+- **Desktop (`xl+`):** full three-panel layout (list + thread + contact sidebar)
 
 ---
 
 ## 🔒 Security
 
-- Passwords hashed with bcrypt (12 rounds)
-- JWT sessions (7-day expiry, httpOnly cookies)
-- Server-side workspace tenant isolation on all queries
-- Rate limiting (in-memory) on auth, widget messages, and AI routes
-- Input sanitization on rich text (HTML stored from Tiptap, stripped for search)
-- CSRF: SameSite=Lax cookies + server-side session validation
+| Measure | Implementation |
+|---|---|
+| Password hashing | bcrypt, 12 rounds |
+| Sessions | JWT (HS256, 7-day expiry), httpOnly + SameSite=Lax cookies |
+| Tenant isolation | Every Prisma query filters by `workspaceId` from the verified session |
+| Rate limiting | In-memory per-IP limiter on auth, widget message, and AI routes |
+| Input validation | Zod schemas on all API inputs; HTML stored from Tiptap stripped for search |
+| Email verification | Token-based flow; unverified accounts blocked from dashboard |
+
+---
+
+## 📊 Reports
+
+The `/reports` page shows workspace-level metrics:
+
+- Total conversations, open count, resolution rate
+- Average first-response time and resolution time
+- Message volume over time
+- Breakdown by channel (chat vs email)
+
+Metrics are computed server-side via aggregation queries and cached per request.
 
 ---
 
 ## 🚀 Deployment (Vercel)
 
 ```bash
-# Push to GitHub, then:
+# 1. Push to GitHub
+git push origin main
+
+# 2. Import project in Vercel dashboard (or use CLI)
 vercel --prod
 
-# Set the env vars from .env.example in the Vercel dashboard
-# (Production + Preview). Set APP_URL / NEXT_PUBLIC_APP_URL / WIDGET_URL
-# to your Vercel URL. DATABASE_URL = your Neon pooled connection string.
+# 3. Set environment variables in Vercel dashboard
+#    (all variables from .env.example, with production values)
+#    APP_URL = https://your-app.vercel.app
+#    NEXT_PUBLIC_APP_URL = https://your-app.vercel.app
 
-# Push the schema to the production DB once:
-vercel env pull
-npx prisma db push
+# 4. Push schema to production DB once
+vercel env pull .env.production.local
+npx prisma db push --url "$DATABASE_URL"
 ```
 
-The build command (`prisma generate && next build`) runs the Prisma client
-generation automatically on every deploy. The Prisma provider is already
-`postgresql` — point `DATABASE_URL` at Neon and you're set.
+The `build` script (`prisma generate && next build`) runs Prisma client generation automatically on every deploy. No manual migration step needed for schema changes — just `npx prisma db push`.
 
 ---
 
-## 📝 Trade-off Notes
-
-| Decision | Rationale |
-|---|---|
-| Pusher over self-hosted WS | Managed, reliable, no infra ops. Free tier sufficient. |
-| DeepSeek over OpenAI/Gemini | Cheap, fast, OpenAI-compatible API — called with plain `fetch`, no SDK dependency. |
-| In-memory rate limiting | Simple, effective for single-instance. Redis recommended for production. |
-| DNS verification via Node lookups | Real TXT/CNAME checks with `dns/promises`; certificate issuance delegated to the platform (Vercel/Let's Encrypt) rather than automated in-app. |
-| KB suggest: keyword scoring | Phrase match first, per-keyword scoring fallback for natural-language questions. Embeddings-based retrieval deferred — overkill at this article volume. |
-
 ## ✂️ What's Built vs. Skipped
 
-**All 7 core requirements are implemented** (auth/teams, chat widget with typing/presence/read receipts, email with threading, unified inbox, KB with widget auto-suggest, AI summaries, custom domains with real DNS verification).
+### ✅ Built
 
-**Stretch features implemented:** contact timeline (past conversations, last seen, source), analytics dashboard (response times, resolution rate).
+| Feature | Notes |
+|---|---|
+| Auth (signup, login, email verification, logout) | JWT sessions, bcrypt, token-based email verification |
+| Multi-tenant workspaces | Slug-based, every query scoped by `workspaceId` |
+| Team management | Invite by email, role-based (admin / agent), token-based invite link |
+| Embeddable chat widget | 1 `<script>` tag, iframe, Pusher real-time, session persistence |
+| Email inbound (webhook) | Multi-format: Resend / Mailgun / Postmark payloads |
+| Email outbound (threaded) | Nodemailer SMTP, proper RFC 2822 threading headers |
+| Unified inbox | Filters by status / channel, search, Pusher live updates |
+| Conversation management | Status, priority, assignee, snooze with time picker |
+| Contact management | Profile drawer, conversation history, email/chat linking |
+| New conversation flow | Start chat or email from inbox or contacts page |
+| Knowledge base | Rich text (Tiptap), categories, public KB page, article search |
+| Widget article suggestions | Keyword scoring + phrase-match; returned in widget API response |
+| AI summaries | DeepSeek `deepseek-v4-flash`, structured JSON output, auto-refresh |
+| Custom domains | DNS TXT + CNAME verification, domain → KB binding |
+| Analytics/Reports | Response time, resolution rate, message volume, channel breakdown |
+| Notifications | In-app bell, unread count, mark-all-read |
+| Responsive UI | Mobile hamburger sidebar, mobile inbox toggle (list ↔ thread), adaptive chip headers |
 
-**Skipped (and why):**
-- **AI auto-reply drafts, canned responses, SLA tracking, webhooks/public API** — deprioritized to keep the core seven production-quality within 48h.
-- **In-app SSL certificate automation** — delegated to Vercel's certificate provisioning; the app verifies ownership/routing via DNS and tracks state.
+### ❌ Skipped (and why)
 
-**Known limitations:**
-- Rate limiting is in-memory (per-instance); use Redis for multi-instance deployments.
-- Widget presence is heuristic (agent activity within a time window), not socket-level presence.
-- Inbound email requires an email provider webhook (Resend/Mailgun/Postmark formats supported) pointed at `/api/email/inbound`.
+| Feature | Reason |
+|---|---|
+| AI auto-reply drafts | Deprioritized to keep core seven production-quality within time constraint |
+| Canned responses / macros | Nice-to-have; not in acceptance criteria |
+| SLA tracking | Requires time-zone-aware business hours logic; out of scope |
+| Webhooks / public API | No acceptance criteria; addable straightforwardly via existing service layer |
+| In-app SSL certificate automation | Delegated to Vercel / Let's Encrypt; app verifies DNS ownership only |
+| Redis rate limiting | In-memory limiter used; Redis recommended for multi-instance prod |
+| Embedding vector search for KB | Keyword scoring used; embeddings overkill at this article volume |
+
+---
+
+## ⚠️ Known Limitations
+
+| Limitation | Detail |
+|---|---|
+| **Rate limiting is in-memory** | Works for single-instance deployments. For horizontal scaling, replace `lib/rate-limit.ts` with a Redis-backed store (e.g. `@upstash/ratelimit`) |
+| **AI quota** | DeepSeek free tier has a limited daily quota. If the summary button returns an error, wait for quota reset or upgrade the API key |
+| **Widget presence** | "Agent online" is heuristic (last activity within a time window), not socket-level presence |
+| **Inbound email** | Requires an email provider webhook (Resend / Mailgun / Postmark) pointed at `/api/email/inbound` — no direct IMAP polling |
+| **No file attachments** | Messages are text-only; image/file attachment support not implemented |
+| **Single Pusher cluster** | Configured at build time; changing cluster requires redeployment |
+
+---
+
+## 🛠 Useful Scripts
+
+```bash
+npm run dev          # Development server (localhost:3000)
+npm run build        # Production build (prisma generate + next build)
+npm run db:push      # Sync Prisma schema to database
+npm run db:generate  # Regenerate Prisma client types
+npm run db:studio    # Open Prisma Studio (visual DB browser)
+npm run db:seed      # Seed database with sample data
+npm run db:reset     # Drop + recreate + seed
+```
